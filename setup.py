@@ -15,7 +15,9 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: put package requirements here
+    "boto3==1.3.0",
+    "click==6.4",
+    "PyYAML==3.11",
 ]
 
 test_requirements = [
@@ -23,7 +25,7 @@ test_requirements = [
 ]
 
 setup(
-    name='python-lambda',
+    name='python-aws-lambda',
     version='0.1.0',
     description="The bare minimum for a Python app running on Amazon Lambda.",
     long_description=readme + '\n\n' + history,
@@ -31,10 +33,13 @@ setup(
     author_email='nficano@gmail.com',
     url='https://github.com/nficano/python-lambda',
     packages=[
-        'python-lambda',
+        'aws_lambda',
     ],
-    package_dir={'python-lambda':
-                 'python-lambda'},
+    package_dir={
+        'aws_lambda': 'aws_lambda'
+    },
+    package_data={'aws_lambda': ['templates/*']},
+    scripts=['scripts/lambda'],
     include_package_data=True,
     install_requires=requirements,
     license="ISCL",

@@ -1,0 +1,12 @@
+region: us-east-1
+
+function_name: my_lambda_function
+handler: service.handler
+description: My first lambda function
+
+aws_access_key_id:
+aws_secret_access_key:
+
+runtime: python2.7
+timeout: 15
+memory_size: 512

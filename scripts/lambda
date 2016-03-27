@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import os
+import shutil
+import click
+import aws_lambda
+
+SCRIPT_PATH = os.getcwd()
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+def init():
+    rel_template_path = os.path.join(__file__, '..', '..', '..',
+                                     'aws_lambda', 'templates')
+    abs_template_path = os.path.abspath(rel_template_path)
+    files = [
+        os.path.join(abs_template_path, f) for f in
+        os.listdir(abs_template_path)
+    ]
+    for f in files:
+        shutil.copy(f, SCRIPT_PATH)
+
+
+@click.command()
+def invoke():
+    aws_lambda.invoke(SCRIPT_PATH)
+
+
+@click.command()
+def deploy():
+    aws_lambda.deploy(SCRIPT_PATH)
+
+if __name__ == '__main__':
+    cli.add_command(init)
+    cli.add_command(invoke)
+    cli.add_command(deploy)
+    cli()
