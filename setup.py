@@ -20,7 +20,7 @@ test_requirements = [
 ]
 
 setup(
-    name='python-aws-lambda',
+    name='python-lambda',
     version='0.1.0',
     description="The bare minimum for a Python app running on Amazon Lambda.",
     long_description=readme + '\n\n' + history,
