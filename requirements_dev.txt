@@ -1,4 +1,0 @@
-boto3==1.3.0
-botocore==1.4.7
-click==6.4
-PyYAML==3.11

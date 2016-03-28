@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import pip
 
-
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -14,11 +10,10 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    "boto3==1.3.0",
-    "click==6.4",
-    "PyYAML==3.11",
-]
+requirements = pip.req.parse_requirements(
+    "requirements.txt", session=pip.download.PipSession()
+)
+pip_requirements = [str(r.req) for r in requirements]
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -32,16 +27,14 @@ setup(
     author="Nick Ficano",
     author_email='nficano@gmail.com',
     url='https://github.com/nficano/python-lambda',
-    packages=[
-        'aws_lambda',
-    ],
-    package_dir={
-        'aws_lambda': 'aws_lambda'
+    packages=find_packages(),
+    package_data={
+        'aws_lambda': ['templates/*'],
+        '': ['*.json'],
     },
-    package_data={'aws_lambda': ['templates/*']},
-    scripts=['scripts/lambda'],
     include_package_data=True,
-    install_requires=requirements,
+    scripts=['scripts/lambda'],
+    install_requires=pip_requirements,
     license="ISCL",
     zip_safe=False,
     keywords='python-lambda',

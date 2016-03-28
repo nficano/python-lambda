@@ -15,7 +15,7 @@ def cli():
 
 @click.command()
 def init():
-    rel_template_path = os.path.join(__file__, '..', '..', '..',
+    rel_template_path = os.path.join(__file__, '..', '..',
                                      'aws_lambda', 'templates')
     abs_template_path = os.path.abspath(rel_template_path)
     files = [
