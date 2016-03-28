@@ -1,14 +1,20 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import json
 import os
+import logging
 from imp import load_source
-from shutil import copyfile
+from shutil import copy, copyfile
 from tempfile import mkdtemp
 
 import boto3
 import pip
 import yaml
+from . import project_template
 from .helpers import mkdir, read, archive, timestamp
+
+
+log = logging.getLogger(__name__)
 
 
 def deploy(src):
@@ -44,7 +50,10 @@ def deploy(src):
     path_to_zip_file = build(path_to_handler_file, path_to_dist,
                              output_filename)
 
-    create_function(cfg, path_to_zip_file)
+    if function_exists(cfg, cfg.get('function_name')):
+        update_function(cfg, path_to_zip_file)
+    else:
+        create_function(cfg, path_to_zip_file)
 
 
 def invoke(src):
@@ -70,6 +79,23 @@ def invoke(src):
     # TODO: look into mocking the ``context`` variable, currently being passed
     # as None.
     return fn(event, None)
+
+
+def init(src, minimal=False):
+    """Copies template files to a given directory.
+
+    :param str src:
+        The path to output the template lambda project files.
+    :param bool minimal:
+        Minimal possible template files (excludes event.json).
+    """
+
+    path_to_project_template = project_template.__path__[0]
+    for f in os.listdir(path_to_project_template):
+        path_to_file = os.path.join(path_to_project_template, f)
+        if minimal and f == 'event.json':
+            continue
+        copy(path_to_file, src)
 
 
 def build(path_to_handler_file, path_to_dist, output_filename):
@@ -142,6 +168,7 @@ def pip_install_to_target(path):
     :param str path:
         Path to copy installed pip packages to.
     """
+    print('Gathering pip packages')
     for r in pip.operations.freeze.freeze():
         pip.main(['install', r, '-t', path, '--ignore-installed'])
 
@@ -159,6 +186,7 @@ def get_account_id(aws_access_key_id, aws_secret_access_key):
 
 def get_client(client, aws_access_key_id, aws_secret_access_key):
     """Shortcut for getting an initialized instance of the boto3 client."""
+
     return boto3.client(
         client,
         aws_access_key_id=aws_access_key_id,
@@ -168,6 +196,8 @@ def get_client(client, aws_access_key_id, aws_secret_access_key):
 
 def create_function(cfg, path_to_zip_file):
     """Register and upload a function to AWS Lambda."""
+
+    print("Creating your new Lambda function")
     byte_stream = read(path_to_zip_file)
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
@@ -188,3 +218,31 @@ def create_function(cfg, path_to_zip_file):
         MemorySize=cfg.get('memory_size'),
         Publish=True
     )
+
+
+def update_function(cfg, path_to_zip_file):
+    """Updates the code of an existing Lambda function"""
+
+    print("Updating your Lambda function")
+    byte_stream = read(path_to_zip_file)
+    aws_access_key_id = cfg.get('aws_access_key_id')
+    aws_secret_access_key = cfg.get('aws_secret_access_key')
+
+    client = get_client('lambda', aws_access_key_id, aws_secret_access_key)
+
+    client.update_function_code(
+        FunctionName=cfg.get('function_name'),
+        ZipFile=byte_stream,
+        Publish=True
+    )
+
+
+def function_exists(cfg, function_name):
+    aws_access_key_id = cfg.get('aws_access_key_id')
+    aws_secret_access_key = cfg.get('aws_secret_access_key')
+    client = get_client('lambda', aws_access_key_id, aws_secret_access_key)
+    functions = client.list_functions().get('Functions', [])
+    for fn in functions:
+        if fn.get('FunctionName') == function_name:
+            return True
+    return False

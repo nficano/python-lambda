@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import shutil
 import click
 import aws_lambda
+import logging
 
 SCRIPT_PATH = os.getcwd()
+
+logging.getLogger('pip').setLevel(logging.CRITICAL)
 
 
 @click.group()
@@ -15,15 +17,7 @@ def cli():
 
 @click.command()
 def init():
-    rel_template_path = os.path.join(__file__, '..', '..',
-                                     'aws_lambda', 'templates')
-    abs_template_path = os.path.abspath(rel_template_path)
-    files = [
-        os.path.join(abs_template_path, f) for f in
-        os.listdir(abs_template_path)
-    ]
-    for f in files:
-        shutil.copy(f, SCRIPT_PATH)
+    aws_lambda.init(SCRIPT_PATH)
 
 
 @click.command()
