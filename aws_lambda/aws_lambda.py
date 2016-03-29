@@ -173,6 +173,9 @@ def pip_install_to_target(path):
     """
     print('Gathering pip packages')
     for r in pip.operations.freeze.freeze():
+        if r.startswith('Python=='):
+            # For some reason Python is coming up in pip freeze.
+            continue
         pip.main(['install', r, '-t', path, '--ignore-installed'])
 
 
