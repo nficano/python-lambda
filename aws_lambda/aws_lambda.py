@@ -95,6 +95,9 @@ def init(src, minimal=False):
         path_to_file = os.path.join(path_to_project_template, f)
         if minimal and f == 'event.json':
             continue
+        if f.endswith('.pyc'):
+            # We don't need the compiled files.
+            continue
         copy(path_to_file, src)
 
 

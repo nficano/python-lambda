@@ -1,10 +1,8 @@
-include AUTHORS.rst
-include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
 include python/boto/endpoints.json
-recursive-include tests *.json *.py *.txt
+recursive-include tests *.json *.py *.txt *.yaml
 recursive-include templates *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
