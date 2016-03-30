@@ -4,9 +4,10 @@ function_name: my_lambda_function
 handler: service.handler
 description: My first lambda function
 
+# if access key and secret are left blank, boto will use the credentials
+# defined in the [default] section of ~/.aws/credentials.
 aws_access_key_id:
 aws_secret_access_key:
 
-runtime: python2.7
-timeout: 15
-memory_size: 512
+# timeout: 15
+# memory_size: 512
