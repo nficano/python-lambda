@@ -215,13 +215,13 @@ def create_function(cfg, path_to_zip_file):
 
     client.create_function(
         FunctionName=cfg.get('function_name'),
-        Runtime=cfg.get('runtime'),
+        Runtime=cfg.get('runtime', 'python2.7'),
         Role=role,
         Handler=cfg.get('handler'),
         Code={'ZipFile': byte_stream},
         Description=cfg.get('description'),
-        Timeout=cfg.get('timeout'),
-        MemorySize=cfg.get('memory_size'),
+        Timeout=cfg.get('timeout', 15),
+        MemorySize=cfg.get('memory_size', 512),
         Publish=True
     )
 
@@ -244,6 +244,8 @@ def update_function(cfg, path_to_zip_file):
 
 
 def function_exists(cfg, function_name):
+    """Check whether a function exists or not"""
+
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key)
