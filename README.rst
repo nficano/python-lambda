@@ -20,17 +20,37 @@ using AWS Lambda.
 Description
 ===========
 
-AWS Lambda is a service that allows you to write Python, Java, or Node.js code that gets executed in response to events like http requests or files uploaded to S3. While working with Lambda is relatively easy, the process of developing, bundling, and deploying your code is not as simple as it could be and for this I offer you Python-Lambda.
+AWS Lambda is a service that allows you to write Python, Java, or Node.js code that gets executed in response to events like http requests or files uploaded to S3.
 
-Python-Lambda aims to take away the guest work of developing your Lambda microservices through a command-line utility to initialize new projects, test and run your code locally, bundle your project, and deploy it to the cloud.
+Working with Lambda is relatively easy, but the process of bundling and deploying your code is not as simple as it could be.
 
+The *Python-Lambda* library takes away the guest work of developing your Lambda microservices by providing you tools to streamline the annoying parts.
+
+Requirements
+============
+
+* Python 2.7 (At the time of writing this, AWS Lambda only supports Python 2.7).
+* Pip (~8.1.1)
+* Virtualenv (~15.0.0)
+* Virtualenvwrapper (~4.7.1)
 
 Installation
 ============
 
-TODO
+Create a new folder for your project and create a virtualenv.
 
-Usage Walkthrough
-=================
+.. code:: bash
 
-TODO
+    $ mkdir my_microservice
+    $ mkvirtualenv my_microservice
+
+Next Download using pip via pypi.
+
+.. code:: bash
+
+    (my_microservice) $ pip install python-lambda
+
+Getting Started
+===============
+
+The following will walk you through writing your first microservice with *Python-lambda*.
