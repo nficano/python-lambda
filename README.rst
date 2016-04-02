@@ -61,6 +61,6 @@ From your `my_microservice` directory, run the following to bootstrap your proje
 
     (my_microservice) $ lambda init
 
-If you look at the directory you will see four files were created: `event.json`, `__init__.py`, `service.py`, and `config.yaml`.
+If you look at the directory you will see four files were created: ``event.json``, ``__init__.py``, ``service.py``, and ``config.yaml``.
 
-Let's begin by taking a look at `config.yaml` in your favorite text editor. For the purpose of this tutorial, the only thing required to be entered is `aws_access_key_id` and `aws_secret_access_key`. You can find these by logging into the AWS management console.
+Let's begin by taking a look at ``config.yaml`` in your favorite text editor. For the purpose of this tutorial, the only thing required to be entered is ``aws_access_key_id`` and ``aws_secret_access_key``. You can find these by logging into the AWS management console.
