@@ -24,7 +24,7 @@ AWS Lambda is a service that allows you to write Python, Java, or Node.js code t
 
 Working with Lambda is relatively easy, but the process of bundling and deploying your code is not as simple as it could be.
 
-The *Python-Lambda* library takes away the guest work of developing your Lambda microservices by providing you tools to streamline the annoying parts.
+The *Python-Lambda* library takes away the guest work of developing your Python-Lambda microservices by providing you tools to streamline the annoying parts.
 
 Requirements
 ============
@@ -54,3 +54,13 @@ Getting Started
 ===============
 
 The following will walk you through writing your first microservice with *Python-lambda*.
+
+From your `my_microservice` directory, run the following to bootstrap your project.
+
+.. code:: bash
+
+    (my_microservice) $ lambda init
+
+If you look at the directory you will see four files were created: `event.json`, `__init__.py`, `service.py`, and `config.yaml`.
+
+Let's begin by taking a look at `config.yaml` in your favorite text editor. For the purpose of this tutorial, the only thing required to be entered is `aws_access_key_id` and `aws_secret_access_key`. You can find these by logging into the AWS management console.
