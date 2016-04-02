@@ -5,7 +5,7 @@ import click
 import aws_lambda
 import logging
 
-SCRIPT_PATH = os.getcwd()
+CURRENT_DIR = os.getcwd()
 
 logging.getLogger('pip').setLevel(logging.CRITICAL)
 
@@ -17,17 +17,17 @@ def cli():
 
 @click.command(help="Create a new function for Lambda.")
 def init():
-    aws_lambda.init(SCRIPT_PATH)
+    aws_lambda.init(CURRENT_DIR)
 
 
 @click.command(help="Run a local test of your function.")
 def invoke():
-    aws_lambda.invoke(SCRIPT_PATH)
+    aws_lambda.invoke(CURRENT_DIR)
 
 
 @click.command(help="Register and deploy your code to lambda.")
 def deploy():
-    aws_lambda.deploy(SCRIPT_PATH)
+    aws_lambda.deploy(CURRENT_DIR)
 
 if __name__ == '__main__':
     cli.add_command(init)

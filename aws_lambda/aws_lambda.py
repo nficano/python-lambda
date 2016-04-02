@@ -38,17 +38,11 @@ def deploy(src):
     function_name = cfg.get('function_name')
     output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
 
-    # Determine the filename and absolute path to the handler module.
-    handler = cfg.get('handler')
-    filename = get_handler_filename(handler)
-    path_to_handler_file = os.path.join(src, filename)
-
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(path_to_handler_file, path_to_dist,
-                             output_filename)
+    path_to_zip_file = build(src, path_to_dist, output_filename)
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -101,7 +95,7 @@ def init(src, minimal=False):
         copy(path_to_file, src)
 
 
-def build(path_to_handler_file, path_to_dist, output_filename):
+def build(src, path_to_dist, output_filename):
     """Builds the file bundle.
 
     :param str path_to_handler_file:
@@ -111,6 +105,10 @@ def build(path_to_handler_file, path_to_dist, output_filename):
     :param str output_filename:
        The name of the archive file.
     """
+    # Load and parse the config file.
+    path_to_config_file = os.path.join(src, 'config.yaml')
+    cfg = read(path_to_config_file, loader=yaml.load)
+
     path_to_temp = mkdtemp(prefix='aws-lambda')
     pip_install_to_target(path_to_temp)
 
@@ -118,6 +116,11 @@ def build(path_to_handler_file, path_to_dist, output_filename):
     output_filename = ('{0}.zip'.format(output_filename)
                        if not output_filename.endswith('.zip')
                        else output_filename)
+
+    # Determine the filename and absolute path to the handler module.
+    handler = cfg.get('handler')
+    filename = get_handler_filename(handler)
+    path_to_handler_file = os.path.join(src, filename)
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
