@@ -92,3 +92,13 @@ If you now try and run:
 "your test handler was successfully invoked!" should print out in your console.  You've probably already put together that the ``lambda invoke`` command passes the values stored in the ``event.json`` file to your function.
 
 The ``event.json`` file should help you develop your Lambda service locally.
+
+When you're ready to deploy your code to lambda simply run:
+
+.. code:: bash
+
+    (my_microservice) $ lambda deploy
+
+The deploy script will evaluate your virtualenv and identify your project dependencies (actually just pip freeze). It will package these up along with your handler function to a zip file that it then uploads to AWS Lambda.
+
+You can now log into the AWS Lambda management console to verify the code deployed successfully and wire it up to respond to an event.
