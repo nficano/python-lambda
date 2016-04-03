@@ -76,4 +76,19 @@ Next let's open ``service.py``, in it you'll find the following function:
         print "your test handler was successfully invoked!"
         return e + pi
 
-This is where your code
+
+This is the hander function; this is what AWS Lambda will invoke in response to an event. You will notice that in the sample code provided ``e`` and ``pi`` are values looked up in a ``dict``. AWS Lambda uses the ``event`` parameter to pass in event data to the handler.
+
+So if for example your function is responding to an http request, ``event`` will be the ``POST`` JSON data and if your function returns something, the contents will be in your http response payload.
+
+Now let's open the ``event.json`` file. Here you'll find the values of ``e`` and ``pi`` that are being referenced in the sample code.
+
+If you now try and run:
+
+.. code:: bash
+
+    (my_microservice) $ lambda invoke
+
+"your test handler was successfully invoked!" should print out in your console.  You've probably already put together that the ``lambda invoke`` command passes the values stored in the ``event.json`` file to your function.
+
+The ``event.json`` file should help you develop your Lambda service locally.
