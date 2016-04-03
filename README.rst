@@ -55,7 +55,7 @@ Getting Started
 
 The following will walk you through writing your first microservice with *Python-lambda*.
 
-From your `my_microservice` directory, run the following to bootstrap your project.
+From your ``my_microservice`` directory, run the following to bootstrap your project.
 
 .. code:: bash
 
@@ -64,3 +64,16 @@ From your `my_microservice` directory, run the following to bootstrap your proje
 If you look at the directory you will see four files were created: ``event.json``, ``__init__.py``, ``service.py``, and ``config.yaml``.
 
 Let's begin by taking a look at ``config.yaml`` in your favorite text editor. For the purpose of this tutorial, the only thing required to be entered is ``aws_access_key_id`` and ``aws_secret_access_key``. You can find these by logging into the AWS management console.
+
+Next let's open ``service.py``, in it you'll find the following function:
+
+.. code:: python
+
+    def handler(event, context):
+        # You code goes here!
+        e = event.get('e')
+        pi = event.get('pi')
+        print "your test handler was successfully invoked!"
+        return e + pi
+
+This is where your code
