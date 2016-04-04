@@ -67,7 +67,6 @@ Next let's open ``service.py``, in here you'll find the following function:
         # You code goes here!
         e = event.get('e')
         pi = event.get('pi')
-        print "your test handler was successfully invoked!"
         return e + pi
 
 
@@ -82,9 +81,9 @@ If you now try and run:
 .. code:: bash
 
     (lambduh) $ lambda invoke
-    # "your test handler was successfully invoked!"
-    # below shows the result returned by your function execution:
     # 5.858
+
+    # your code completed in: 0.00000310s
 
 As you probably put together, the ``lambda invoke`` command grabs the values stored in the ``event.json`` file and passes them to your function.
 

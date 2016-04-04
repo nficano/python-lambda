@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import json
-import os
 import logging
+import os
+import time
 from imp import load_source
 from shutil import copy, copyfile
 from tempfile import mkdtemp
@@ -77,9 +78,12 @@ def invoke(src, alt_event=None):
 
     # TODO: look into mocking the ``context`` variable, currently being passed
     # as None.
+    start = time.time()
     results = fn(event, None)
-    print("below shows the result returned by your function "
-          "execution:\n{0}".format(results))
+    end = time.time()
+    elapsed = end - start
+    print("{0}".format(results))
+    print("\nyour code completed in: {:.8f}s".format(elapsed))
 
 
 def init(src, minimal=False):
