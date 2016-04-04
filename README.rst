@@ -83,7 +83,8 @@ If you now try and run:
     (lambduh) $ lambda invoke
     # 5.858
 
-    # your code completed in: 0.00000310s
+    # execution time: 0.00000310s
+    # function execution timeout: 15s
 
 As you probably put together, the ``lambda invoke`` command grabs the values stored in the ``event.json`` file and passes them to your function.
 

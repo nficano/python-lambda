@@ -82,8 +82,11 @@ def invoke(src, alt_event=None):
     results = fn(event, None)
     end = time.time()
     elapsed = end - start
+    timeout = cfg.get('timeout', 15)
+
     print("{0}".format(results))
-    print("\nyour code completed in: {:.8f}s".format(elapsed))
+    print("\nexecution time: {:.8f}s\nfunction execution "
+          "timeout: {:2}s".format(elapsed, timeout))
 
 
 def init(src, minimal=False):
