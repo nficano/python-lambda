@@ -50,19 +50,24 @@ def deploy(src):
         create_function(cfg, path_to_zip_file)
 
 
-def invoke(src):
+def invoke(src, alt_event=None):
     """Simulates a call to your function.
 
     :param str src:
         The path to your Lambda ready project (folder must contain a valid
         config.yaml and handler module (e.g.: service.py).
+    :param str alt_event:
+        An optional argument to override which event file to use.
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Load and parse event file.
-    path_to_event_file = os.path.join(src, 'event.json')
+    if alt_event:
+        path_to_event_file = os.path.join(src, alt_event)
+    else:
+        path_to_event_file = os.path.join(src, 'event.json')
     event = read(path_to_event_file, loader=json.loads)
 
     handler = cfg.get('handler')
