@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import print_function
 import json
 import os
 import logging
@@ -77,7 +77,9 @@ def invoke(src, alt_event=None):
 
     # TODO: look into mocking the ``context`` variable, currently being passed
     # as None.
-    return fn(event, None)
+    results = fn(event, None)
+    print("below shows the result returned by your function "
+          "execution:\n{0}".format(results))
 
 
 def init(src, minimal=False):

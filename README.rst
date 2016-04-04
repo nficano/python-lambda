@@ -87,7 +87,7 @@ If you now try and run:
 
 As you probably put together, the ``lambda invoke`` command grabs the values stored in the ``event.json`` file and passes them to your function.
 
-The ``event.json`` file should help you develop your Lambda service locally. You can specify an alternate ``event.json`` file by passing the ``--event=<filename>.json`` argument to ``lambda invoke``.
+The ``event.json`` file should help you develop your Lambda service locally. You can specify an alternate ``event.json`` file by passing the ``--event-file=<filename>.json`` argument to ``lambda invoke``.
 
 When you're ready to deploy your code to Lambda simply run:
 
