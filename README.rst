@@ -71,7 +71,7 @@ Next let's open ``service.py``, in here you'll find the following function:
         return e + pi
 
 
-This is the hander function; this is the function AWS Lambda will invoke in response to an event. You will notice that in the sample code ``e`` and ``pi`` are values in a ``dict``. AWS Lambda uses the ``event`` parameter to pass in event data to the handler.
+This is the handler function; this is the function AWS Lambda will invoke in response to an event. You will notice that in the sample code ``e`` and ``pi`` are values in a ``dict``. AWS Lambda uses the ``event`` parameter to pass in event data to the handler.
 
 So if for example your function is responding to an http request, ``event`` will be the ``POST`` JSON data and if your function returns something, the contents will be in your http response payload.
 
