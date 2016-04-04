@@ -14,7 +14,7 @@ python-λ
   :alt: Python Versions
   :target: https://pypi.python.org/pypi/python-lambda/
 
-Python-lambda is a toolset for developing microservices in AWS Lambda.
+Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
 Description
 ===========
@@ -23,7 +23,7 @@ AWS Lambda is a service that allows you to write Python, Java, or Node.js code t
 
 Working with Lambda is relatively easy, but the process of bundling and deploying your code is not as simple as it could be.
 
-The *Python-Lambda* library takes away the guest work of developing your Python-Lambda microservices by providing you a toolset to streamline the annoying parts.
+The *Python-Lambda* library takes away the guest work of developing your Python-Lambda services by providing you a toolset to streamline the annoying parts.
 
 Requirements
 ============
@@ -40,20 +40,20 @@ Begin by creating a new virtualenv and project folder.
 
 .. code:: bash
 
-    $ mkvirtualenv my_microservice
-    (my_microservice) $ mkdir my_microservice
+    $ mkvirtualenv lambduh
+    (lambduh) $ mkdir lambduh
 
 Next, download *Python-Lambda* using pip via pypi.
 
 .. code:: bash
 
-    (my_microservice) $ pip install python-lambda
+    (lambduh) $ pip install python-lambda
 
-From your ``my_microservice`` directory, run the following to bootstrap your project.
+From your ``lambduh`` directory, run the following to bootstrap your project.
 
 .. code:: bash
 
-    (my_microservice) $ lambda init
+    (lambduh) $ lambda init
 
 This will create the following files: ``event.json``, ``__init__.py``, ``service.py``, and ``config.yaml``.
 
@@ -81,7 +81,7 @@ If you now try and run:
 
 .. code:: bash
 
-    (my_microservice) $ lambda invoke
+    (lambduh) $ lambda invoke
     # "your test handler was successfully invoked!"
     # below shows the result returned by your function execution:
     # 5.858
@@ -94,7 +94,7 @@ When you're ready to deploy your code to Lambda simply run:
 
 .. code:: bash
 
-    (my_microservice) $ lambda deploy
+    (lambduh) $ lambda deploy
 
 The deploy script will evaluate your virtualenv and identify your project dependencies. It will package these up along with your handler function to a zip file that it then uploads to AWS Lambda.
 
