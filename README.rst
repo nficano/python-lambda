@@ -82,8 +82,9 @@ If you now try and run:
 .. code:: bash
 
     (my_microservice) $ lambda invoke
-
-"your test handler was successfully invoked!" should print out in your console.
+    # "your test handler was successfully invoked!"
+    # below shows the result returned by your function execution:
+    # 5.858
 
 As you probably put together, the ``lambda invoke`` command grabs the values stored in the ``event.json`` file and passes them to your function.
 
