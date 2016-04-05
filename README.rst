@@ -98,4 +98,22 @@ When you're ready to deploy your code to Lambda simply run:
 
 The deploy script will evaluate your virtualenv and identify your project dependencies. It will package these up along with your handler function to a zip file that it then uploads to AWS Lambda.
 
-You can now log into the AWS Lambda management console to verify the code deployed successfully.
+You can now log into the `AWS Lambda management console <https://console.aws.amazon.com/lambda/>`_ to verify the code deployed successfully.
+
+Wiring to an API endpoint
+=========================
+
+If you're looking to develop a simple microservice you can easily wire your function up to an http endpoint.
+
+Begin by navigating to your `AWS Lambda management console <https://console.aws.amazon.com/lambda/>`_ and clicking on your function. Click the API Endpoints tab and click "Add API endpoint".
+
+Under API endpoint type select "API Gateway".
+
+Next change Method to ``POST`` and Security to "Open" and click submit (NOTE: you should secure this for use in production, open security is use for demo purposes).
+
+Now try and run:
+
+.. code:: bash
+
+    $ curl -H "Content-Type: application/json" -X POST -d '{"pi": 3.14, "e": 2.718}' https://<API endpoint URL>
+    # 5.8580000000000005
