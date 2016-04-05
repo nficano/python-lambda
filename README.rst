@@ -23,7 +23,7 @@ AWS Lambda is a service that allows you to write Python, Java, or Node.js code t
 
 Working with Lambda is relatively easy, but the process of bundling and deploying your code is not as simple as it could be.
 
-The *Python-Lambda* library takes away the guest work of developing your Python-Lambda services by providing you a toolset to streamline the annoying parts.
+The *Python-Lambda* library takes away the guess work of developing your Python-Lambda services by providing you a toolset to streamline the annoying parts.
 
 Requirements
 ============
@@ -81,6 +81,11 @@ If you now try and run:
 .. code:: bash
 
     (lambduh) $ lambda invoke -v
+
+You will get:
+
+.. code:: bash
+
     # 5.858
 
     # execution time: 0.00000310s
