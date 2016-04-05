@@ -80,7 +80,7 @@ If you now try and run:
 
 .. code:: bash
 
-    (lambduh) $ lambda invoke
+    (lambduh) $ lambda invoke -v
     # 5.858
 
     # execution time: 0.00000310s
