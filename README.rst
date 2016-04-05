@@ -72,7 +72,7 @@ Next let's open ``service.py``, in here you'll find the following function:
 
 This is the handler function; this is the function AWS Lambda will invoke in response to an event. You will notice that in the sample code ``e`` and ``pi`` are values in a ``dict``. AWS Lambda uses the ``event`` parameter to pass in event data to the handler.
 
-So if for example your function is responding to an http request, ``event`` will be the ``POST`` JSON data and if your function returns something, the contents will be in your http response payload.
+So if, for example, your function is responding to an http request, ``event`` will be the ``POST`` JSON data and if your function returns something, the contents will be in your http response payload.
 
 Next let's open the ``event.json`` file:
 
@@ -123,7 +123,7 @@ Begin by navigating to your `AWS Lambda management console <https://console.aws.
 
 Under API endpoint type select "API Gateway".
 
-Next change Method to ``POST`` and Security to "Open" and click submit (NOTE: you should secure this for use in production, open security is use for demo purposes).
+Next change Method to ``POST`` and Security to "Open" and click submit (NOTE: you should secure this for use in production, open security is used for demo purposes).
 
 Now try and run:
 
