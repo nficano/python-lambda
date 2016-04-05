@@ -74,7 +74,16 @@ This is the handler function; this is the function AWS Lambda will invoke in res
 
 So if for example your function is responding to an http request, ``event`` will be the ``POST`` JSON data and if your function returns something, the contents will be in your http response payload.
 
-Next let's open the ``event.json`` file. Here you'll find the values of ``e`` and ``pi`` that are being referenced in the sample code.
+Next let's open the ``event.json`` file:
+
+.. code:: json
+
+    {
+      "pi": 3.14,
+      "e": 2.718
+    }
+
+Here you'll find the values of ``e`` and ``pi`` that are being referenced in the sample code.
 
 If you now try and run:
 
