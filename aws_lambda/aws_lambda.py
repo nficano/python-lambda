@@ -51,7 +51,7 @@ def deploy(src):
         create_function(cfg, path_to_zip_file)
 
 
-def invoke(src, alt_event=None):
+def invoke(src, alt_event=None, verbose=False):
     """Simulates a call to your function.
 
     :param str src:
@@ -59,6 +59,8 @@ def invoke(src, alt_event=None):
         config.yaml and handler module (e.g.: service.py).
     :param str alt_event:
         An optional argument to override which event file to use.
+    :param bool verbose:
+        Whether to print out verbose details.
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, 'config.yaml')
@@ -78,15 +80,15 @@ def invoke(src, alt_event=None):
 
     # TODO: look into mocking the ``context`` variable, currently being passed
     # as None.
+
     start = time.time()
     results = fn(event, None)
     end = time.time()
-    elapsed = end - start
-    timeout = cfg.get('timeout', 15)
 
     print("{0}".format(results))
-    print("\nexecution time: {:.8f}s\nfunction execution "
-          "timeout: {:2}s".format(elapsed, timeout))
+    if verbose:
+        print("\nexecution time: {:.8f}s\nfunction execution "
+              "timeout: {:2}s".format(end - start, cfg.get('timeout', 15)))
 
 
 def init(src, minimal=False):

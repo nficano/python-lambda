@@ -21,9 +21,10 @@ def init():
 
 
 @click.command(help="Run a local test of your function.")
-@click.option('--event-file', default=None, help='Alternate event file.',)
-def invoke(event_file):
-    aws_lambda.invoke(CURRENT_DIR, event_file)
+@click.option('--event-file', default=None, help='Alternate event file.')
+@click.option('--verbose', '-v', is_flag=True)
+def invoke(event_file, verbose):
+    aws_lambda.invoke(CURRENT_DIR, event_file, verbose)
 
 
 @click.command(help="Register and deploy your code to lambda.")
