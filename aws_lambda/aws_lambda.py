@@ -209,13 +209,14 @@ def get_account_id(aws_access_key_id, aws_secret_access_key):
     return client.get_user()['User']['Arn'].split(':')[4]
 
 
-def get_client(client, aws_access_key_id, aws_secret_access_key):
+def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
     """Shortcut for getting an initialized instance of the boto3 client."""
 
     return boto3.client(
         client,
         aws_access_key_id=aws_access_key_id,
-        aws_secret_access_key=aws_secret_access_key
+        aws_secret_access_key=aws_secret_access_key,
+        region_name=region
     )
 
 
@@ -230,7 +231,8 @@ def create_function(cfg, path_to_zip_file):
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
     role = get_role_name(account_id)
 
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key)
+    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
+                        cfg.get('region'))
 
     client.create_function(
         FunctionName=cfg.get('function_name'),
@@ -253,7 +255,8 @@ def update_function(cfg, path_to_zip_file):
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key)
+    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
+                        cfg.get('region'))
 
     client.update_function_code(
         FunctionName=cfg.get('function_name'),
@@ -267,7 +270,8 @@ def function_exists(cfg, function_name):
 
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key)
+    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
+                        cfg.get('region'))
     functions = client.list_functions().get('Functions', [])
     for fn in functions:
         if fn.get('FunctionName') == function_name:
