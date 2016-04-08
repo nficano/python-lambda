@@ -40,20 +40,20 @@ Begin by creating a new virtualenv and project folder.
 
 .. code:: bash
 
-    $ mkvirtualenv lambduh
-    (lambduh) $ mkdir lambduh
+    $ mkvirtualenv pylambda
+    (pylambda) $ mkdir pylambda
 
 Next, download *Python-Lambda* using pip via pypi.
 
 .. code:: bash
 
-    (lambduh) $ pip install python-lambda
+    (pylambda) $ pip install python-lambda
 
-From your ``lambduh`` directory, run the following to bootstrap your project.
+From your ``pylambda`` directory, run the following to bootstrap your project.
 
 .. code:: bash
 
-    (lambduh) $ lambda init
+    (pylambda) $ lambda init
 
 This will create the following files: ``event.json``, ``__init__.py``, ``service.py``, and ``config.yaml``.
 
@@ -89,7 +89,7 @@ If you now try and run:
 
 .. code:: bash
 
-    (lambduh) $ lambda invoke -v
+    (pylambda) $ lambda invoke -v
 
 You will get:
 
@@ -108,7 +108,7 @@ When you're ready to deploy your code to Lambda simply run:
 
 .. code:: bash
 
-    (lambduh) $ lambda deploy
+    (pylambda) $ lambda deploy
 
 The deploy script will evaluate your virtualenv and identify your project dependencies. It will package these up along with your handler function to a zip file that it then uploads to AWS Lambda.
 
@@ -129,5 +129,8 @@ Now try and run:
 
 .. code:: bash
 
-    $ curl -H "Content-Type: application/json" -X POST -d '{"pi": 3.14, "e": 2.718}' https://<API endpoint URL>
+    $ curl --header "Content-Type:application/json" \
+           --request POST \
+           --data '{"pi": 3.14, "e": 2.718}' \
+           https://<API endpoint URL>
     # 5.8580000000000005
