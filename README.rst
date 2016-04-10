@@ -64,7 +64,7 @@ Next let's open ``service.py``, in here you'll find the following function:
 .. code:: python
 
     def handler(event, context):
-        # You code goes here!
+        # Your code goes here!
         e = event.get('e')
         pi = event.get('pi')
         return e + pi
