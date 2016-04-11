@@ -29,22 +29,11 @@ def deploy(src):
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
 
-    # Get the absolute path to the output directory and create it if it doesn't
-    # already exist.
-    dist_directory = cfg.get('dist_directory', 'dist')
-    path_to_dist = os.path.join(src, dist_directory)
-    mkdir(path_to_dist)
-
-    # Combine the name of the Lambda function with the current timestamp to use
-    # for the output filename.
-    function_name = cfg.get('function_name')
-    output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
-
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, path_to_dist, output_filename)
+    path_to_zip_file = build(src)
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -112,7 +101,7 @@ def init(src, minimal=False):
         copy(path_to_file, src)
 
 
-def build(src, path_to_dist, output_filename):
+def build(src):
     """Builds the file bundle.
 
     :param str path_to_handler_file:
@@ -126,6 +115,17 @@ def build(src, path_to_dist, output_filename):
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
 
+    # Get the absolute path to the output directory and create it if it doesn't
+    # already exist.
+    dist_directory = cfg.get('dist_directory', 'dist')
+    path_to_dist = os.path.join(src, dist_directory)
+    mkdir(path_to_dist)
+
+    # Combine the name of the Lambda function with the current timestamp to use
+    # for the output filename.
+    function_name = cfg.get('function_name')
+    output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
+
     path_to_temp = mkdtemp(prefix='aws-lambda')
     pip_install_to_target(path_to_temp)
 
@@ -134,18 +134,22 @@ def build(src, path_to_dist, output_filename):
                        if not output_filename.endswith('.zip')
                        else output_filename)
 
-    # Determine the filename and absolute path to the handler module.
-    handler = cfg.get('handler')
-    filename = get_handler_filename(handler)
-    path_to_handler_file = os.path.join(src, filename)
+    files = []
+    for filename in os.listdir(src):
+        if os.path.isfile(filename):
+            if filename == '.DS_Store':
+                continue
+            if filename == 'config.yaml':
+                continue
+            files.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
+    for f in files:
+        _, filename = os.path.split(f)
 
-    _, filename = os.path.split(path_to_handler_file)
-
-    # Copy handler file into root of the packages folder.
-    copyfile(path_to_handler_file, os.path.join(path_to_temp, filename))
+        # Copy handler file into root of the packages folder.
+        copyfile(f, os.path.join(path_to_temp, filename))
 
     # Zip them together into a single file.
     # TODO: Delete temp directory created once the archive has been compiled.
