@@ -31,7 +31,8 @@ def deploy(src):
 
     # Get the absolute path to the output directory and create it if it doesn't
     # already exist.
-    path_to_dist = os.path.join(src, 'dist')
+    dist_directory = cfg.get('dist_directory', 'dist')
+    path_to_dist = os.path.join(src, dist_directory)
     mkdir(path_to_dist)
 
     # Combine the name of the Lambda function with the current timestamp to use
