@@ -20,6 +20,11 @@ def init():
     aws_lambda.init(CURRENT_DIR)
 
 
+@click.command(help="Bundles package for deployment.")
+def build():
+    aws_lambda.build(CURRENT_DIR)
+
+
 @click.command(help="Run a local test of your function.")
 @click.option('--event-file', default=None, help='Alternate event file.')
 @click.option('--verbose', '-v', is_flag=True)
@@ -35,4 +40,5 @@ if __name__ == '__main__':
     cli.add_command(init)
     cli.add_command(invoke)
     cli.add_command(deploy)
+    cli.add_command(build)
     cli()
