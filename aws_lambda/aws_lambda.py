@@ -203,9 +203,9 @@ def pip_install_to_target(path):
         pip.main(['install', r, '-t', path, '--ignore-installed'])
 
 
-def get_role_name(account_id):
-    """Shortcut to insert the `account_id` into the iam string."""
-    return "arn:aws:iam::{0}:role/lambda_basic_execution".format(account_id)
+def get_role_name(account_id, role):
+    """Shortcut to insert the `account_id` and `role` into the iam string."""
+    return "arn:aws:iam::{0}:role/{1}".format(account_id, role)
 
 
 def get_account_id(aws_access_key_id, aws_secret_access_key):
@@ -234,7 +234,7 @@ def create_function(cfg, path_to_zip_file):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id)
+    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
 
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))

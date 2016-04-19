@@ -2,6 +2,7 @@ region: us-east-1
 
 function_name: my_lambda_function
 handler: service.handler
+# role: lambda_basic_execution
 description: My first lambda function
 
 # if access key and secret are left blank, boto will use the credentials
