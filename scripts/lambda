@@ -27,9 +27,10 @@ def build():
 
 @click.command(help="Run a local test of your function.")
 @click.option('--event-file', default=None, help='Alternate event file.')
+@click.option('--context-file', default=None, help='Alternate context file.')
 @click.option('--verbose', '-v', is_flag=True)
-def invoke(event_file, verbose):
-    aws_lambda.invoke(CURRENT_DIR, event_file, verbose)
+def invoke(event_file, context_file, verbose):
+    aws_lambda.invoke(CURRENT_DIR, event_file, context_file, verbose)
 
 
 @click.command(help="Register and deploy your code to lambda.")

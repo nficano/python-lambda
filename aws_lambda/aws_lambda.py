@@ -3,6 +3,7 @@ from __future__ import print_function
 import json
 import logging
 import os
+import sys
 import time
 from imp import load_source
 from shutil import copy, copyfile
@@ -12,6 +13,7 @@ import boto3
 import pip
 import yaml
 from . import project_template
+from .context import MockContext
 from .helpers import mkdir, read, archive, timestamp
 
 
@@ -41,7 +43,23 @@ def deploy(src):
         create_function(cfg, path_to_zip_file)
 
 
-def invoke(src, alt_event=None, verbose=False):
+def _load_json(base_dir, filename, default):
+    if filename is None:
+        filename = default
+    path = os.path.join(base_dir, filename)
+    try:
+        return read(path, loader=json.loads)
+    except IOError:
+        print("File does not exist: {}".format(path))
+        # file does not exist or json is malformed
+        return None
+    except ValueError:
+        print("Could not decode JSON object: {}".format(path))
+        print("Aborting...")
+        sys.exit(1)
+
+
+def invoke(src, alt_event=None, alt_context=None, verbose=False):
     """Simulates a call to your function.
 
     :param str src:
@@ -49,6 +67,8 @@ def invoke(src, alt_event=None, verbose=False):
         config.yaml and handler module (e.g.: service.py).
     :param str alt_event:
         An optional argument to override which event file to use.
+    :param str alt_context:
+        An optional argument to override which context file to use.
     :param bool verbose:
         Whether to print out verbose details.
     """
@@ -57,22 +77,16 @@ def invoke(src, alt_event=None, verbose=False):
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Load and parse event file.
-    if alt_event:
-        path_to_event_file = os.path.join(src, alt_event)
-    else:
-        path_to_event_file = os.path.join(src, 'event.json')
-    event = read(path_to_event_file, loader=json.loads)
+    event = _load_json(src, alt_event, 'event.json')
+    context = _load_json(src, alt_context, 'context.json')
 
     handler = cfg.get('handler')
     # Inspect the handler string (<module>.<function name>) and translate it
     # into a function we can execute.
     fn = get_callable_handler_function(src, handler)
 
-    # TODO: look into mocking the ``context`` variable, currently being passed
-    # as None.
-
     start = time.time()
-    results = fn(event, None)
+    results = fn(event, MockContext(context))
     end = time.time()
 
     print("{0}".format(results))
