@@ -29,3 +29,4 @@ class ClientContext(object):
     def __init__(self, context):
         self.custom = FakeObject(context)
         self.client = FakeObject()
+        self.env = {}
