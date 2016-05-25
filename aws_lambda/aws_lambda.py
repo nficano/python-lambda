@@ -18,12 +18,15 @@ from .helpers import mkdir, read, archive, timestamp
 log = logging.getLogger(__name__)
 
 
-def deploy(src):
+def deploy(src, local_package=None):
     """Deploys a new function to AWS Lambda.
 
     :param str src:
         The path to your Lambda ready project (folder must contain a valid
         config.yaml and handler module (e.g.: service.py).
+    :param str local_package:
+        The path to a local package with should be included in the deploy as
+        well (and/or is not available on PyPi)
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, 'config.yaml')
@@ -33,7 +36,7 @@ def deploy(src):
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src)
+    path_to_zip_file = build(src, local_package)
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -101,15 +104,15 @@ def init(src, minimal=False):
         copy(path_to_file, src)
 
 
-def build(src):
+def build(src, local_package=None):
     """Builds the file bundle.
 
-    :param str path_to_handler_file:
-       The path to handler (main execution) file.
-    :param str path_to_dist:
-       The path to the folder for distributable.
-    :param str output_filename:
-       The name of the archive file.
+    :param str src:
+       The path to your Lambda ready project (folder must contain a valid
+        config.yaml and handler module (e.g.: service.py).
+    :param str local_package:
+        The path to a local package with should be included in the deploy as
+        well (and/or is not available on PyPi)
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, 'config.yaml')
@@ -127,7 +130,7 @@ def build(src):
     output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
 
     path_to_temp = mkdtemp(prefix='aws-lambda')
-    pip_install_to_target(path_to_temp)
+    pip_install_to_target(path_to_temp, local_package)
 
     # Gracefully handle whether ".zip" was included in the filename or not.
     output_filename = ('{0}.zip'.format(output_filename)
@@ -188,24 +191,30 @@ def get_handler_filename(handler):
     return '{0}.py'.format(module_name)
 
 
-def pip_install_to_target(path):
+def pip_install_to_target(path, local_package=None):
     """For a given active virtualenv, gather all installed pip packages then
     copy (re-install) them to the path provided.
 
     :param str path:
         Path to copy installed pip packages to.
+    :param str local_package:
+        The path to a local package with should be included in the deploy as
+        well (and/or is not available on PyPi)
     """
     print('Gathering pip packages')
     for r in pip.operations.freeze.freeze():
-        if r.startswith('Python=='):
+        if r.startswith('Python==') or r.startswith('-e git+git'):
             # For some reason Python is coming up in pip freeze.
             continue
         pip.main(['install', r, '-t', path, '--ignore-installed'])
 
+    if local_package is not None:
+        pip.main(['install', local_package, '-t', path])
 
-def get_role_name(account_id):
-    """Shortcut to insert the `account_id` into the iam string."""
-    return "arn:aws:iam::{0}:role/lambda_basic_execution".format(account_id)
+
+def get_role_name(account_id, role):
+    """Shortcut to insert the `account_id` and `role` into the iam string."""
+    return "arn:aws:iam::{0}:role/{1}".format(account_id, role)
 
 
 def get_account_id(aws_access_key_id, aws_secret_access_key):
@@ -234,7 +243,7 @@ def create_function(cfg, path_to_zip_file):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id)
+    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
 
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
