@@ -18,7 +18,7 @@ def read(path, loader=None):
 
 def archive(src, dest, filename):
     output = os.path.join(dest, filename)
-    zfh = zipfile.ZipFile(output, 'w')
+    zfh = zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED)
 
     for root, _, files in os.walk(src):
         for file in files:
