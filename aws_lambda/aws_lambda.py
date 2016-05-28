@@ -206,6 +206,8 @@ def pip_install_to_target(path, local_package=None):
         if r.startswith('Python=='):
             # For some reason Python is coming up in pip freeze.
             continue
+        elif r.startswith('-e '):
+            r = r.replace('-e ','')
         pip.main(['install', r, '-t', path, '--ignore-installed'])
 
     if local_package is not None:
