@@ -208,6 +208,8 @@ def pip_install_to_target(path, local_package=None):
             continue
         elif r.startswith('-e '):
             r = r.replace('-e ','')
+
+        print('Installing {package}'.format(package=r))
         pip.main(['install', r, '-t', path, '--ignore-installed'])
 
     if local_package is not None:
