@@ -273,6 +273,9 @@ def update_function(cfg, path_to_zip_file):
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
+    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
+    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
+
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
 
@@ -280,6 +283,15 @@ def update_function(cfg, path_to_zip_file):
         FunctionName=cfg.get('function_name'),
         ZipFile=byte_stream,
         Publish=True
+    )
+
+    client.update_function_configuration(
+        FunctionName=cfg.get('function_name'),
+        Role=role,
+        Handler=cfg.get('handler'),
+        Description=cfg.get('description'),
+        Timeout=cfg.get('timeout', 15),
+        MemorySize=cfg.get('memory_size', 512)
     )
 
 
