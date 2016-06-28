@@ -1,10 +1,11 @@
-boto3==1.3.0
-botocore==1.4.7
-click==6.4
+boto3==1.3.1
+botocore==1.4.32
+click==6.6
 docutils==0.12
 futures==3.0.5
 jmespath==0.9.0
 pyaml==15.8.2
-python-dateutil==2.5.1
+python-dateutil==2.5.3
+python-lambda==0.2.0
 PyYAML==3.11
 six==1.10.0
