@@ -4,7 +4,7 @@ help:
 	@echo "release - package and upload a release"
 	@echo "install - install the package to the active Python's site-packages"
 
-clean: clean-build clean-pyc
+clean: clean-build clean-pyc clean-merge
 
 clean-build:
 	rm -fr build/
@@ -18,6 +18,9 @@ clean-pyc:
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
+
+clean-merge:
+	find . -name '*.orig' -exec rm -f {} +
 
 lint:
 	flake8 python-lambda tests
