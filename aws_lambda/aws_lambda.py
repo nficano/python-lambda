@@ -96,7 +96,7 @@ def init(src, minimal=False):
     templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                  "project_templates")
     for filename in os.listdir(templates_path):
-        if minimal and filename == 'event.json':
+        if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
         destination = os.path.join(templates_path, filename)
         copy(destination, src)
