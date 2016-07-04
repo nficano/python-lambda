@@ -29,7 +29,7 @@ setup(
     url='https://github.com/nficano/python-lambda',
     packages=find_packages(),
     package_data={
-        'aws_lambda': ['templates/*'],
+        'aws_lambda': ['project_templates/*'],
         '': ['*.json'],
     },
     include_package_data=True,
