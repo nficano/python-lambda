@@ -282,7 +282,7 @@ def update_function(cfg, path_to_zip_file):
     client.update_function_code(
         FunctionName=cfg.get('function_name'),
         ZipFile=byte_stream,
-        Publish=True
+        Publish=False
     )
 
     client.update_function_configuration(
@@ -292,6 +292,11 @@ def update_function(cfg, path_to_zip_file):
         Description=cfg.get('description'),
         Timeout=cfg.get('timeout', 15),
         MemorySize=cfg.get('memory_size', 512)
+    )
+
+    # Publish last, so versions pick up eventually updated description...
+    client.publish_version(
+        FunctionName=cfg.get('function_name')
     )
 
 
