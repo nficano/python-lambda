@@ -246,8 +246,10 @@ def create_function(cfg, path_to_zip_file):
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
+    role = cfg.get('role', 'lambda_basic_execution')
+    if not role.startswith('arn:aws:iam::'):
+        account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
+        role = get_role_name(account_id, role)
 
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
@@ -273,8 +275,10 @@ def update_function(cfg, path_to_zip_file):
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
+    role = cfg.get('role', 'lambda_basic_execution')
+    if not role.startswith('arn:aws:iam::'):
+        account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
+        role = get_role_name(account_id, role)
 
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
