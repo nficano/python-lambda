@@ -12,7 +12,7 @@ import botocore
 import boto3
 import pip
 import yaml
-from . import project_template
+
 from .helpers import mkdir, read, archive, timestamp
 
 
@@ -137,15 +137,13 @@ def init(src, minimal=False):
         Minimal possible template files (excludes event.json).
     """
 
-    path_to_project_template = project_template.__path__[0]
-    for f in os.listdir(path_to_project_template):
-        path_to_file = os.path.join(path_to_project_template, f)
-        if minimal and f == 'event.json':
+    templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "project_templates")
+    for filename in os.listdir(templates_path):
+        if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
-        if f.endswith('.pyc'):
-            # We don't need the compiled files.
-            continue
-        copy(path_to_file, src)
+        destination = os.path.join(templates_path, filename)
+        copy(destination, src)
 
 
 def build(src, local_package=None):
