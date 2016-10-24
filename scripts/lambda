@@ -16,8 +16,16 @@ def cli():
 
 
 @click.command(help="Create a new function for Lambda.")
-def init():
-    aws_lambda.init(CURRENT_DIR)
+@click.argument('folder', default=False)
+def init(folder):
+    path = CURRENT_DIR
+    if folder:
+        path = "{}/{}".format(CURRENT_DIR, folder)
+        if os.path.isfile(path):
+            raise click.ClickException("{} is a file".format(path))
+        if not os.path.exists(path):
+            os.makedirs(path)
+    aws_lambda.init(path)
 
 
 @click.command(help="Bundles package for deployment.")
