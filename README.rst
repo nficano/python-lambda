@@ -121,6 +121,20 @@ Under API endpoint type select "API Gateway".
 
 Next change Method to ``POST`` and Security to "Open" and click submit (NOTE: you should secure this for use in production, open security is used for demo purposes).
 
+At last you need to change the return value of the function to comply with the standard defined for the API Gateway endpoint, the function should now look like this:
+
+.. code:: python
+
+    def handler(event, context):
+        # Your code goes here!
+        e = event.get('e')
+        pi = event.get('pi')
+        return {
+            "statusCode": 200,
+            "headers": { "Content-Type": "application/json"},
+            "body": e + pi
+        }
+
 Now try and run:
 
 .. code:: bash
