@@ -264,9 +264,9 @@ def get_role_name(account_id, role):
 
 
 def get_account_id(aws_access_key_id, aws_secret_access_key):
-    """Query IAM for a users' account_id"""
-    client = get_client('iam', aws_access_key_id, aws_secret_access_key)
-    return client.get_user()['User']['Arn'].split(':')[4]
+    """Query STS for a users' account_id"""
+    client = get_client('sts', aws_access_key_id, aws_secret_access_key)
+    return client.get_caller_identity().get('Account')
 
 
 def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
