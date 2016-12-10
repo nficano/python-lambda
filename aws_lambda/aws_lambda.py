@@ -8,14 +8,58 @@ from imp import load_source
 from shutil import copy, copyfile
 from tempfile import mkdtemp
 
+import botocore
 import boto3
 import pip
 import yaml
-from . import project_template
+
 from .helpers import mkdir, read, archive, timestamp
 
 
 log = logging.getLogger(__name__)
+
+
+def cleanup_old_versions(src, keep_last_versions):
+    """Deletes old deployed versions of the function in AWS Lambda.
+
+    Won't delete $Latest and any aliased version
+
+    :param str src:
+        The path to your Lambda ready project (folder must contain a valid
+        config.yaml and handler module (e.g.: service.py).
+    :param int keep_last_versions:
+        The number of recent versions to keep and not delete
+    """
+    if keep_last_versions <= 0:
+        print("Won't delete all versions. Please do this manually")
+    else:
+        path_to_config_file = os.path.join(src, 'config.yaml')
+        cfg = read(path_to_config_file, loader=yaml.load)
+
+        aws_access_key_id = cfg.get('aws_access_key_id')
+        aws_secret_access_key = cfg.get('aws_secret_access_key')
+
+        client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
+                            cfg.get('region'))
+
+        response = client.list_versions_by_function(
+            FunctionName=cfg.get("function_name")
+        )
+        versions = response.get("Versions")
+        if len(response.get("Versions")) < keep_last_versions:
+            print("Nothing to delete. (Too few versions published)")
+        else:
+            version_numbers = [elem.get("Version") for elem in
+                               versions[1:-keep_last_versions]]
+            for version_number in version_numbers:
+                try:
+                    client.delete_function(
+                        FunctionName=cfg.get("function_name"),
+                        Qualifier=version_number
+                    )
+                except botocore.exceptions.ClientError as e:
+                    print("Skipping Version {}: {}".format(version_number,
+                                                              e.message))
 
 
 def deploy(src, local_package=None):
@@ -93,15 +137,13 @@ def init(src, minimal=False):
         Minimal possible template files (excludes event.json).
     """
 
-    path_to_project_template = project_template.__path__[0]
-    for f in os.listdir(path_to_project_template):
-        path_to_file = os.path.join(path_to_project_template, f)
-        if minimal and f == 'event.json':
+    templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                 "project_templates")
+    for filename in os.listdir(templates_path):
+        if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
-        if f.endswith('.pyc'):
-            # We don't need the compiled files.
-            continue
-        copy(path_to_file, src)
+        destination = os.path.join(templates_path, filename)
+        copy(destination, src)
 
 
 def build(src, local_package=None):
@@ -222,9 +264,9 @@ def get_role_name(account_id, role):
 
 
 def get_account_id(aws_access_key_id, aws_secret_access_key):
-    """Query IAM for a users' account_id"""
-    client = get_client('iam', aws_access_key_id, aws_secret_access_key)
-    return client.get_user()['User']['Arn'].split(':')[4]
+    """Query STS for a users' account_id"""
+    client = get_client('sts', aws_access_key_id, aws_secret_access_key)
+    return client.get_caller_identity().get('Account')
 
 
 def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
