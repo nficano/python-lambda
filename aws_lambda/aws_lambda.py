@@ -333,7 +333,11 @@ def update_function(cfg, path_to_zip_file):
         Handler=cfg.get('handler'),
         Description=cfg.get('description'),
         Timeout=cfg.get('timeout', 15),
-        MemorySize=cfg.get('memory_size', 512)
+        MemorySize=cfg.get('memory_size', 512),
+        VpcConfig={
+            'SubnetIds': cfg.get('subnet_ids', []),
+            'SecurityGroupIds': cfg.get('security_group_ids', [])
+        }
     )
 
 
