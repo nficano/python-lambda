@@ -294,8 +294,10 @@ def create_function(cfg, path_to_zip_file):
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
 
+    function_name = os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
+    print('Creating lambda function with name: {}'.format(function_name))
     client.create_function(
-        FunctionName=cfg.get('function_name'),
+        FunctionName=function_name,
         Runtime=cfg.get('runtime', 'python2.7'),
         Role=role,
         Handler=cfg.get('handler'),
@@ -303,6 +305,13 @@ def create_function(cfg, path_to_zip_file):
         Description=cfg.get('description'),
         Timeout=cfg.get('timeout', 15),
         MemorySize=cfg.get('memory_size', 512),
+        Environment={
+            'Variables': {
+                key.strip('LAMBDA_'): value
+                for key, value in os.environ.items()
+                if key.startswith('LAMBDA_')
+            }
+        },
         Publish=True
     )
 
@@ -333,7 +342,11 @@ def update_function(cfg, path_to_zip_file):
         Handler=cfg.get('handler'),
         Description=cfg.get('description'),
         Timeout=cfg.get('timeout', 15),
-        MemorySize=cfg.get('memory_size', 512)
+        MemorySize=cfg.get('memory_size', 512),
+        VpcConfig={
+            'SubnetIds': cfg.get('subnet_ids', []),
+            'SecurityGroupIds': cfg.get('security_group_ids', [])
+        }
     )
 
 
