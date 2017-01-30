@@ -303,6 +303,13 @@ def create_function(cfg, path_to_zip_file):
         Description=cfg.get('description'),
         Timeout=cfg.get('timeout', 15),
         MemorySize=cfg.get('memory_size', 512),
+        Environment={
+            'Variables': {
+                key.strip('LAMBDA_'): value
+                for key, value in os.envinron.items()
+                if key.startswith('LAMBDA_')
+            }
+        },
         Publish=True
     )
 
