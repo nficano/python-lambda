@@ -14,3 +14,5 @@ aws_secret_access_key:
 # timeout: 15
 # memory_size: 512
 # include_dirs: []
+# subnet_ids: []
+# security_group_ids: []
