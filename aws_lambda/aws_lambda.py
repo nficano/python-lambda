@@ -176,6 +176,13 @@ def build(src, requirements=False, local_package=None):
                           requirements=requirements,
                           local_package=local_package)
 
+    # Hack for Zope.
+    if "zope" in os.listdir(path_to_temp):
+        print("Zope packages detected; fixing Zope package paths to make them importable.")
+        # Touch.
+        with open(os.path.join(path_to_temp, "zope/__init__.py"), "wb"):
+            pass
+
     # Gracefully handle whether ".zip" was included in the filename or not.
     output_filename = ('{0}.zip'.format(output_filename)
                        if not output_filename.endswith('.zip')
