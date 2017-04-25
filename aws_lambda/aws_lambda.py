@@ -195,6 +195,7 @@ def build(src, requirements=False, local_package=None):
                 continue
             if filename == 'config.yaml':
                 continue
+            print("Bundling: %r" % filename)
             files.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
