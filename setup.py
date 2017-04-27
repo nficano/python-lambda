@@ -21,7 +21,7 @@ test_requirements = [
 
 setup(
     name='python-lambda',
-    version='0.5.1',
+    version='0.6.0',
     description="The bare minimum for a Python app running on Amazon Lambda.",
     long_description=readme + '\n\n' + history,
     author="Nick Ficano",
