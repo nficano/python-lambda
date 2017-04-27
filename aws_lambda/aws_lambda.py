@@ -58,11 +58,11 @@ def cleanup_old_versions(src, keep_last_versions):
                         Qualifier=version_number
                     )
                 except botocore.exceptions.ClientError as e:
-                    print("Skipping Version {}: {}".format(version_number,
-                                                              e.message))
+                    print("Skipping Version {}: {}"
+                          .format(version_number, e.message))
 
 
-def deploy(src, local_package=None):
+def deploy(src, requirements=False, local_package=None):
     """Deploys a new function to AWS Lambda.
 
     :param str src:
@@ -80,7 +80,7 @@ def deploy(src, local_package=None):
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, local_package)
+    path_to_zip_file = build(src, requirements, local_package)
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -137,8 +137,8 @@ def init(src, minimal=False):
         Minimal possible template files (excludes event.json).
     """
 
-    templates_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                 "project_templates")
+    templates_path = os.path.join(
+        os.path.dirname(os.path.abspath(__file__)), "project_templates")
     for filename in os.listdir(templates_path):
         if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
@@ -146,7 +146,7 @@ def init(src, minimal=False):
         copy(destination, src)
 
 
-def build(src, local_package=None):
+def build(src, requirements=False, local_package=None):
     """Builds the file bundle.
 
     :param str src:
@@ -172,7 +172,9 @@ def build(src, local_package=None):
     output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
 
     path_to_temp = mkdtemp(prefix='aws-lambda')
-    pip_install_to_target(path_to_temp, local_package)
+    pip_install_to_target(path_to_temp,
+                          requirements=requirements,
+                          local_package=local_package)
 
     # Gracefully handle whether ".zip" was included in the filename or not.
     output_filename = ('{0}.zip'.format(output_filename)
@@ -233,29 +235,61 @@ def get_handler_filename(handler):
     return '{0}.py'.format(module_name)
 
 
-def pip_install_to_target(path, local_package=None):
+def _install_packages(path, packages):
+    """Install all packages listed to the target directory.
+
+    Ignores any package that includes Python itself and python-lambda as well
+    since its only needed for deploying and not running the code
+
+    :param str path:
+        Path to copy installed pip packages to.
+    :param list packages:
+        A list of packages to be installed via pip.
+    """
+    def _filter_blacklist(package):
+        blacklist = ["-i", "#", "Python==", "python-lambda=="]
+        return all(package.startswith(entry) is False for entry in blacklist)
+    filtered_packages = filter(_filter_blacklist, packages)
+    for package in filtered_packages:
+        if package.startswith('-e '):
+            package = package.replace('-e ', '')
+
+        print('Installing {package}'.format(package=package))
+        pip.main(['install', package, '-t', path, '--ignore-installed'])
+
+
+def pip_install_to_target(path, requirements=False, local_package=None):
     """For a given active virtualenv, gather all installed pip packages then
     copy (re-install) them to the path provided.
 
     :param str path:
         Path to copy installed pip packages to.
+    :param bool requirements:
+        If set, only the packages in the requirements.txt file are installed.
+        The requirements.txt file needs to be in the same directory as the
+        project which shall be deployed.
+        Defaults to false and installs all pacakges found via pip freeze if
+        not set.
     :param str local_package:
         The path to a local package with should be included in the deploy as
         well (and/or is not available on PyPi)
     """
-    print('Gathering pip packages')
-    for r in pip.operations.freeze.freeze():
-        if r.startswith('Python=='):
-            # For some reason Python is coming up in pip freeze.
-            continue
-        elif r.startswith('-e '):
-            r = r.replace('-e ','')
+    packages = []
+    if not requirements:
+        print('Gathering pip packages')
+        packages.extend(pip.operations.freeze.freeze())
+    else:
+        if os.path.exists("requirements.txt"):
+            print('Gathering requirement packages')
+            data = read("requirements.txt")
+            packages.extend(data.splitlines())
 
-        print('Installing {package}'.format(package=r))
-        pip.main(['install', r, '-t', path, '--ignore-installed'])
+    if not packages:
+        print('No dependency packages installed!')
 
     if local_package is not None:
-        pip.main(['install', local_package, '-t', path])
+        packages.append(local_package)
+    _install_packages(path, packages)
 
 
 def get_role_name(account_id, role):
@@ -294,10 +328,12 @@ def create_function(cfg, path_to_zip_file):
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
 
-    function_name = os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
-    print('Creating lambda function with name: {}'.format(function_name))
+    func_name = (
+        os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
+    )
+    print('Creating lambda function with name: {}'.format(func_name))
     client.create_function(
-        FunctionName=function_name,
+        FunctionName=func_name,
         Runtime=cfg.get('runtime', 'python2.7'),
         Role=role,
         Handler=cfg.get('handler'),
