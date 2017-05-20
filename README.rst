@@ -12,6 +12,10 @@ python-λ
 
 Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
+A call for contributors
+=======================
+With python-lambda and `pytube <https://github.com/nficano/pytube/>`_ both continuing to gain momentum, I'm calling for contributors to help build out new features, review pull requests, fix bugs, and maintain overall code quality. If you're interested, please email me at nficano[at]gmail.com.
+
 Description
 ===========
 
