@@ -36,7 +36,9 @@ Requirements
 Getting Started
 ===============
 
-Begin by creating a new virtualenv and project folder.
+First, you must create an IAM Role on your AWS account called `lambda_basic_execution` with the `LambdaBasicExecution` policy attached.
+
+On your computer, create a new virtualenv and project folder.
 
 .. code:: bash
 
