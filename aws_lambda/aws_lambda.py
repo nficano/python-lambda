@@ -296,7 +296,10 @@ def pip_install_to_target(path, requirements=False, local_package=None):
         print('No dependency packages installed!')
 
     if local_package is not None:
-        packages.append(local_package)
+        if not isinstance(local_package, (list, tuple) ):
+            local_package = [local_package]
+        for l_package in local_package:
+            packages.append(l_package)
     _install_packages(path, packages)
 
 
