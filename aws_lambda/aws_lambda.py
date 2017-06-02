@@ -5,7 +5,7 @@ import logging
 import os
 import time
 from imp import load_source
-from shutil import copy, copyfile
+from shutil import copy, copyfile, copytree
 from tempfile import mkdtemp
 
 import botocore
@@ -191,6 +191,7 @@ def build(src, requirements=False, local_package=None):
                        else output_filename)
 
     files = []
+    dirs = []
     for filename in os.listdir(src):
         if os.path.isfile(filename):
             if filename == '.DS_Store':
@@ -199,6 +200,10 @@ def build(src, requirements=False, local_package=None):
                 continue
             print("Bundling: %r" % filename)
             files.append(os.path.join(src, filename))
+        elif os.path.isdir(filename) and filename in cfg.get('include_dirs', []):
+            if filename == 'dist':
+                continue
+            dirs.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
@@ -207,6 +212,12 @@ def build(src, requirements=False, local_package=None):
 
         # Copy handler file into root of the packages folder.
         copyfile(f, os.path.join(path_to_temp, filename))
+
+    for d in dirs:
+        _, dirname = os.path.split(d)
+
+        # Copy directory into root of the packages folder.
+        copytree(d, os.path.join(path_to_temp, dirname), symlinks=True)
 
     # Zip them together into a single file.
     # TODO: Delete temp directory created once the archive has been compiled.
@@ -354,6 +365,10 @@ def create_function(cfg, path_to_zip_file):
         Description=cfg.get('description'),
         Timeout=cfg.get('timeout', 15),
         MemorySize=cfg.get('memory_size', 512),
+        VpcConfig={
+            'SubnetIds': cfg.get('subnet_ids', []),
+            'SecurityGroupIds': cfg.get('security_group_ids', [])
+        },
         Environment={
             'Variables': {
                 key.strip('LAMBDA_'): value
