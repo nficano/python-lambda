@@ -142,8 +142,10 @@ def init(src, minimal=False):
     for filename in os.listdir(templates_path):
         if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
-        destination = os.path.join(templates_path, filename)
-        copy(destination, src)
+        dest_path = os.path.join(templates_path, filename)
+
+        if not os.path.isdir(dest_path):
+            copy(dest_path, src)
 
 
 def build(src, requirements=False, local_package=None):
