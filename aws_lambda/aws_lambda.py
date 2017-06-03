@@ -3,6 +3,7 @@ from __future__ import print_function
 import json
 import logging
 import os
+import sys
 import time
 from imp import load_source
 from shutil import copy, copyfile
@@ -109,6 +110,12 @@ def invoke(src, alt_event=None, verbose=False):
     else:
         path_to_event_file = os.path.join(src, 'event.json')
     event = read(path_to_event_file, loader=json.loads)
+
+    #Tweak to allow module to import local modules
+    try:
+        sys.path.index(src)
+    except:
+        sys.path.append(src)
 
     handler = cfg.get('handler')
     # Inspect the handler string (<module>.<function name>) and translate it
