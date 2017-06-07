@@ -408,6 +408,13 @@ def update_function(cfg, path_to_zip_file):
         VpcConfig={
             'SubnetIds': cfg.get('subnet_ids', []),
             'SecurityGroupIds': cfg.get('security_group_ids', [])
+        },
+        Environment={
+            'Variables': {
+                key: value
+                for key, value
+                in cfg.get('environment_variables').items()
+            }
         }
     )
 
