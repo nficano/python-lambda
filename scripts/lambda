@@ -28,7 +28,7 @@ def init(folder):
 
 @click.command(help="Bundles package for deployment.")
 @click.option('--use-requirements', default=False, is_flag=True, help='Install all packages defined in requirements.txt')
-@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path())
+@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path(), multiple=True)
 def build(use_requirements, local_package):
     aws_lambda.build(CURRENT_DIR, use_requirements, local_package)
 
@@ -42,7 +42,7 @@ def invoke(event_file, verbose):
 
 @click.command(help="Register and deploy your code to lambda.")
 @click.option('--use-requirements', default=False, is_flag=True, help='Install all packages defined in requirements.txt')
-@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path())
+@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path(), multiple=True)
 def deploy(use_requirements, local_package):
     aws_lambda.deploy(CURRENT_DIR, use_requirements, local_package)
 

@@ -12,6 +12,10 @@ python-λ
 
 Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
+A call for contributors
+=======================
+With python-lambda and `pytube <https://github.com/nficano/pytube/>`_ both continuing to gain momentum, I'm calling for contributors to help build out new features, review pull requests, fix bugs, and maintain overall code quality. If you're interested, please email me at nficano[at]gmail.com.
+
 Description
 ===========
 
@@ -32,7 +36,9 @@ Requirements
 Getting Started
 ===============
 
-Begin by creating a new virtualenv and project folder.
+First, you must create an IAM Role on your AWS account called `lambda_basic_execution` with the `LambdaBasicExecution` policy attached.
+
+On your computer, create a new virtualenv and project folder.
 
 .. code:: bash
 
