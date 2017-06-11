@@ -7,9 +7,6 @@ from setuptools import setup, find_packages
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
-
 requirements = pip.req.parse_requirements(
     "requirements.txt", session=pip.download.PipSession()
 )
@@ -23,7 +20,7 @@ setup(
     name='python-lambda',
     version='0.8.0',
     description="The bare minimum for a Python app running on Amazon Lambda.",
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author="Nick Ficano",
     author_email='nficano@gmail.com',
     url='https://github.com/nficano/python-lambda',
