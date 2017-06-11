@@ -150,3 +150,21 @@ Now try and run:
            --data '{"pi": 3.14, "e": 2.718}' \
            https://<API endpoint URL>
     # 5.8580000000000005
+
+Development
+===========
+
+Development of this happens on GitHub, patches including tests, documentation are very welcome, as well as bug reports and feature contributions are welcome! Also please open an issue if this tool does not function as you'd expect.
+
+How to release updates
+----------------------
+
+Execute the following commands:
+
+.. code:: bash
+
+   $ git checkout master
+   $ bumpversion [major|minor|patch]
+   $ python setup.py sdist bdist_wheel upload
+   $ bumpversion --no-tag patch
+   $ git push origin master --tags
