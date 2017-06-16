@@ -365,7 +365,7 @@ def create_function(cfg, path_to_zip_file):
         'Publish': True
     }
 
-    if cfg.get('environment_variables', None) is not None:
+    if 'environment_variables' in cfg:
         kwargs.update(
             Environment = {
                 'Variables': {
@@ -398,25 +398,31 @@ def update_function(cfg, path_to_zip_file):
         Publish=True
     )
 
-    client.update_function_configuration(
-        FunctionName=cfg.get('function_name'),
-        Role=role,
-        Handler=cfg.get('handler'),
-        Description=cfg.get('description'),
-        Timeout=cfg.get('timeout', 15),
-        MemorySize=cfg.get('memory_size', 512),
-        VpcConfig={
+    kwargs = {
+        'FunctionName': cfg.get('function_name'),
+        'Role': role,
+        'Handler': cfg.get('handler'),
+        'Description': cfg.get('description'),
+        'Timeout': cfg.get('timeout', 15),
+        'MemorySize': cfg.get('memory_size', 512),
+        'VpcConfig': {
             'SubnetIds': cfg.get('subnet_ids', []),
             'SecurityGroupIds': cfg.get('security_group_ids', [])
-        },
-        Environment={
-            'Variables': {
-                key: value
-                for key, value
-                in cfg.get('environment_variables').items()
-            }
         }
-    )
+    }
+
+    if 'environment_variables' in cfg:
+        kwargs.update(
+            Environment={
+                'Variables': {
+                    key: value
+                    for key, value
+                    in cfg.get('environment_variables').items()
+                }
+            }
+        )
+
+    client.update_function_configuration(**kwargs)
 
 
 def function_exists(cfg, function_name):
