@@ -151,6 +151,17 @@ Now try and run:
            https://<API endpoint URL>
     # 5.8580000000000005
 
+Environment Variables
+=====================
+Lambda functions support environment variables. In order to set environment variables for your deployed code to use, you can configure them in ``config.yaml``
+
+.. code:: yaml
+    environment_variables:
+        env1: foo
+        env2: baz
+
+This would create environment variables in the lambda instance upon deploy. If your functions don't need environment variables, simply leave this section out of your config.
+
 Development
 ===========
 
