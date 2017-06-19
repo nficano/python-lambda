@@ -16,14 +16,15 @@ def cli():
 
 
 @click.command(help="Create a new function for Lambda.")
+@click.option('--minimal', default=False, is_flag=True, help="Minimal possible template files (excludes event.json)")
 @click.argument('folder', nargs=-1, type=click.Path(file_okay=False, writable=True))
-def init(folder):
+def init(folder, minimal):
     path = CURRENT_DIR
     if len(folder) > 0:
         path = "{}/{}".format(CURRENT_DIR, folder[0])
         if not os.path.exists(path):
             os.makedirs(path)
-    aws_lambda.init(path)
+    aws_lambda.init(path, minimal=minimal)
 
 
 @click.command(help="Bundles package for deployment.")
