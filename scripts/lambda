@@ -47,11 +47,11 @@ def deploy(use_requirements, local_package):
     aws_lambda.deploy(CURRENT_DIR, use_requirements, local_package)
 
 
-
 @click.command(help="Delete old versions of your functions")
 @click.option("--keep-last", type=int, prompt="Please enter the number of recent versions to keep")
 def cleanup(keep_last):
     aws_lambda.cleanup_old_versions(CURRENT_DIR, keep_last)
+
 
 if __name__ == '__main__':
     cli.add_command(init)
