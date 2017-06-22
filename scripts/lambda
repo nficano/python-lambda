@@ -20,7 +20,7 @@ def cli():
 def init(folder):
     path = CURRENT_DIR
     if len(folder) > 0:
-        path = "{}/{}".format(CURRENT_DIR, folder[0])
+        path = os.path.join(CURRENT_DIR, *folder)
         if not os.path.exists(path):
             os.makedirs(path)
     aws_lambda.init(path)
