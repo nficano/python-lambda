@@ -354,12 +354,12 @@ def create_function(cfg, path_to_zip_file):
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
 
-    #Do we prefer development variable over config?
+    # Do we prefer development variable over config?
     func_name = (
         os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
     )
     print('Creating lambda function with name: {}'.format(func_name))
-    kwargs={
+    kwargs = {
         'FunctionName': func_name,
         'Runtime': cfg.get('runtime', 'python2.7'),
         'Role': role,
@@ -373,7 +373,7 @@ def create_function(cfg, path_to_zip_file):
 
     if 'environment_variables' in cfg:
         kwargs.update(
-            Environment = {
+            Environment={
                 'Variables': {
                     key: value
                     for key, value
@@ -382,7 +382,8 @@ def create_function(cfg, path_to_zip_file):
             }
         )
 
-    client.create_function( **kwargs )
+    client.create_function(**kwargs)
+
 
 def update_function(cfg, path_to_zip_file):
     """Updates the code of an existing Lambda function"""
