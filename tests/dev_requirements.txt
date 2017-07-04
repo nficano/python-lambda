@@ -1,2 +1,2 @@
 bumpversion==0.5.3
-
+pre-commit==0.15.0

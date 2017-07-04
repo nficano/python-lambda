@@ -1,20 +1,25 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+
 import json
 import logging
 import os
 import sys
 import time
 from imp import load_source
-from shutil import copy, copyfile
+from shutil import copy
+from shutil import copyfile
 from tempfile import mkdtemp
 
-import botocore
 import boto3
+import botocore
 import pip
 import yaml
 
-from .helpers import mkdir, read, archive, timestamp
+from .helpers import archive
+from .helpers import mkdir
+from .helpers import read
+from .helpers import timestamp
 
 
 log = logging.getLogger(__name__)
@@ -44,22 +49,22 @@ def cleanup_old_versions(src, keep_last_versions):
                             cfg.get('region'))
 
         response = client.list_versions_by_function(
-            FunctionName=cfg.get("function_name")
+            FunctionName=cfg.get('function_name')
         )
-        versions = response.get("Versions")
-        if len(response.get("Versions")) < keep_last_versions:
-            print("Nothing to delete. (Too few versions published)")
+        versions = response.get('Versions')
+        if len(response.get('Versions')) < keep_last_versions:
+            print('Nothing to delete. (Too few versions published)')
         else:
-            version_numbers = [elem.get("Version") for elem in
+            version_numbers = [elem.get('Version') for elem in
                                versions[1:-keep_last_versions]]
             for version_number in version_numbers:
                 try:
                     client.delete_function(
-                        FunctionName=cfg.get("function_name"),
+                        FunctionName=cfg.get('function_name'),
                         Qualifier=version_number
                     )
                 except botocore.exceptions.ClientError as e:
-                    print("Skipping Version {}: {}"
+                    print('Skipping Version {}: {}'
                           .format(version_number, e.message))
 
 
@@ -111,7 +116,7 @@ def invoke(src, alt_event=None, verbose=False):
         path_to_event_file = os.path.join(src, 'event.json')
     event = read(path_to_event_file, loader=json.loads)
 
-    #Tweak to allow module to import local modules
+    # Tweak to allow module to import local modules
     try:
         sys.path.index(src)
     except:
@@ -129,10 +134,10 @@ def invoke(src, alt_event=None, verbose=False):
     results = fn(event, None)
     end = time.time()
 
-    print("{0}".format(results))
+    print('{0}'.format(results))
     if verbose:
-        print("\nexecution time: {:.8f}s\nfunction execution "
-              "timeout: {:2}s".format(end - start, cfg.get('timeout', 15)))
+        print('\nexecution time: {:.8f}s\nfunction execution '
+              'timeout: {:2}s'.format(end - start, cfg.get('timeout', 15)))
 
 
 def init(src, minimal=False):
@@ -145,7 +150,7 @@ def init(src, minimal=False):
     """
 
     templates_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "project_templates")
+        os.path.dirname(os.path.abspath(__file__)), 'project_templates')
     for filename in os.listdir(templates_path):
         if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
@@ -178,7 +183,7 @@ def build(src, requirements=False, local_package=None):
     # Combine the name of the Lambda function with the current timestamp to use
     # for the output filename.
     function_name = cfg.get('function_name')
-    output_filename = "{0}-{1}.zip".format(timestamp(), function_name)
+    output_filename = '{0}-{1}.zip'.format(timestamp(), function_name)
 
     path_to_temp = mkdtemp(prefix='aws-lambda')
     pip_install_to_target(path_to_temp,
@@ -186,10 +191,11 @@ def build(src, requirements=False, local_package=None):
                           local_package=local_package)
 
     # Hack for Zope.
-    if "zope" in os.listdir(path_to_temp):
-        print("Zope packages detected; fixing Zope package paths to make them importable.")
+    if 'zope' in os.listdir(path_to_temp):
+        print('Zope packages detected; fixing Zope package paths to '
+              'make them importable.')
         # Touch.
-        with open(os.path.join(path_to_temp, "zope/__init__.py"), "wb"):
+        with open(os.path.join(path_to_temp, 'zope/__init__.py'), 'wb'):
             pass
 
     # Gracefully handle whether ".zip" was included in the filename or not.
@@ -204,7 +210,7 @@ def build(src, requirements=False, local_package=None):
                 continue
             if filename == 'config.yaml':
                 continue
-            print("Bundling: %r" % filename)
+            print('Bundling: %r' % filename)
             files.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
@@ -264,7 +270,7 @@ def _install_packages(path, packages):
         A list of packages to be installed via pip.
     """
     def _filter_blacklist(package):
-        blacklist = ["-i", "#", "Python==", "python-lambda=="]
+        blacklist = ['-i', '#', 'Python==', 'python-lambda==']
         return all(package.startswith(entry) is False for entry in blacklist)
     filtered_packages = filter(_filter_blacklist, packages)
     for package in filtered_packages:
@@ -296,16 +302,16 @@ def pip_install_to_target(path, requirements=False, local_package=None):
         print('Gathering pip packages')
         packages.extend(pip.operations.freeze.freeze())
     else:
-        if os.path.exists("requirements.txt"):
+        if os.path.exists('requirements.txt'):
             print('Gathering requirement packages')
-            data = read("requirements.txt")
+            data = read('requirements.txt')
             packages.extend(data.splitlines())
 
     if not packages:
         print('No dependency packages installed!')
 
     if local_package is not None:
-        if not isinstance(local_package, (list, tuple) ):
+        if not isinstance(local_package, (list, tuple)):
             local_package = [local_package]
         for l_package in local_package:
             packages.append(l_package)
@@ -314,7 +320,7 @@ def pip_install_to_target(path, requirements=False, local_package=None):
 
 def get_role_name(account_id, role):
     """Shortcut to insert the `account_id` and `role` into the iam string."""
-    return "arn:aws:iam::{0}:role/{1}".format(account_id, role)
+    return 'arn:aws:iam::{0}:role/{1}'.format(account_id, role)
 
 
 def get_account_id(aws_access_key_id, aws_secret_access_key):
@@ -337,7 +343,7 @@ def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
 def create_function(cfg, path_to_zip_file):
     """Register and upload a function to AWS Lambda."""
 
-    print("Creating your new Lambda function")
+    print('Creating your new Lambda function')
     byte_stream = read(path_to_zip_file)
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
@@ -375,7 +381,7 @@ def create_function(cfg, path_to_zip_file):
 def update_function(cfg, path_to_zip_file):
     """Updates the code of an existing Lambda function"""
 
-    print("Updating your Lambda function")
+    print('Updating your Lambda function')
     byte_stream = read(path_to_zip_file)
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
