@@ -354,29 +354,35 @@ def create_function(cfg, path_to_zip_file):
     client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
 
+    #Do we prefer development variable over config?
     func_name = (
         os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
     )
     print('Creating lambda function with name: {}'.format(func_name))
-    client.create_function(
-        FunctionName=func_name,
-        Runtime=cfg.get('runtime', 'python2.7'),
-        Role=role,
-        Handler=cfg.get('handler'),
-        Code={'ZipFile': byte_stream},
-        Description=cfg.get('description'),
-        Timeout=cfg.get('timeout', 15),
-        MemorySize=cfg.get('memory_size', 512),
-        Environment={
-            'Variables': {
-                key.strip('LAMBDA_'): value
-                for key, value in os.environ.items()
-                if key.startswith('LAMBDA_')
-            }
-        },
-        Publish=True
-    )
+    kwargs={
+        'FunctionName': func_name,
+        'Runtime': cfg.get('runtime', 'python2.7'),
+        'Role': role,
+        'Handler': cfg.get('handler'),
+        'Code': {'ZipFile': byte_stream},
+        'Description': cfg.get('description'),
+        'Timeout': cfg.get('timeout', 15),
+        'MemorySize': cfg.get('memory_size', 512),
+        'Publish': True
+    }
 
+    if 'environment_variables' in cfg:
+        kwargs.update(
+            Environment = {
+                'Variables': {
+                    key: value
+                    for key, value
+                    in cfg.get('environment_variables').items()
+                }
+            }
+        )
+
+    client.create_function( **kwargs )
 
 def update_function(cfg, path_to_zip_file):
     """Updates the code of an existing Lambda function"""
@@ -398,18 +404,31 @@ def update_function(cfg, path_to_zip_file):
         Publish=True
     )
 
-    client.update_function_configuration(
-        FunctionName=cfg.get('function_name'),
-        Role=role,
-        Handler=cfg.get('handler'),
-        Description=cfg.get('description'),
-        Timeout=cfg.get('timeout', 15),
-        MemorySize=cfg.get('memory_size', 512),
-        VpcConfig={
+    kwargs = {
+        'FunctionName': cfg.get('function_name'),
+        'Role': role,
+        'Handler': cfg.get('handler'),
+        'Description': cfg.get('description'),
+        'Timeout': cfg.get('timeout', 15),
+        'MemorySize': cfg.get('memory_size', 512),
+        'VpcConfig': {
             'SubnetIds': cfg.get('subnet_ids', []),
             'SecurityGroupIds': cfg.get('security_group_ids', [])
         }
-    )
+    }
+
+    if 'environment_variables' in cfg:
+        kwargs.update(
+            Environment={
+                'Variables': {
+                    key: value
+                    for key, value
+                    in cfg.get('environment_variables').items()
+                }
+            }
+        )
+
+    client.update_function_configuration(**kwargs)
 
 
 def function_exists(cfg, function_name):

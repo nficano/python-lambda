@@ -13,3 +13,8 @@ aws_secret_access_key:
 # dist_directory: dist
 # timeout: 15
 # memory_size: 512
+#
+# Experimental Environment variables
+environment_variables:
+    env_1: foo
+    env_2: baz
