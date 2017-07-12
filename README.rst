@@ -12,6 +12,12 @@ python-λ
 
 Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
+NOTE: CHANGES FROM BASE REPOSITORY
+============================
+
+* Adding Python 3.6 support for the local environment & the lambda runtime
+
+
 A call for contributors
 =======================
 With python-lambda and `pytube <https://github.com/nficano/pytube/>`_ both continuing to gain momentum, I'm calling for contributors to help build out new features, review pull requests, fix bugs, and maintain overall code quality. If you're interested, please email me at nficano[at]gmail.com.
@@ -28,7 +34,7 @@ The *Python-Lambda* library takes away the guess work of developing your Python-
 Requirements
 ============
 
-* Python 2.7 (At the time of writing this, AWS Lambda only supports Python 2.7).
+* Python 2.7 & 3.6 (At the time of writing this, AWS Lambda only supports Python 2.7/3.6).
 * Pip (~8.1.1)
 * Virtualenv (~15.0.0)
 * Virtualenvwrapper (~4.7.1)
