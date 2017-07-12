@@ -17,6 +17,7 @@ NOTE: CHANGES FROM BASE REPOSITORY
 
 * Adding Python 3.6 support for the local environment & the lambda runtime
 * Supports "secret" environment variable values by reading them from the local environment during deploy instead of using hard-coded ones in the config file.
+* You can install this version via pip with ``pip install --editable git+https://github.com/asaolabs/python-lambda#egg=python-lambda``
 
 
 A call for contributors
