@@ -13,9 +13,10 @@ python-λ
 Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
 NOTE: CHANGES FROM BASE REPOSITORY
-============================
+==================================
 
 * Adding Python 3.6 support for the local environment & the lambda runtime
+* Supports "secret" environment variable values by reading them from the local environment during deploy instead of using hard-coded ones in the config file.
 
 
 A call for contributors
@@ -166,6 +167,13 @@ Lambda functions support environment variables. In order to set environment vari
   environment_variables:
     env1: foo
     env2: baz
+
+You can also keep "secrets" out of your config file by using the following syntax ``${}`` to read the values from your current/local environment.
+
+.. code:: yaml
+
+  environment_variables:
+    env3: ${LOCAL_ENVIRONMENT_VARIABLE_NAME}
 
 This would create environment variables in the lambda instance upon deploy. If your functions don't need environment variables, simply leave this section out of your config.
 

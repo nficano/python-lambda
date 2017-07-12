@@ -20,6 +20,7 @@ from .helpers import archive
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
+from .helpers import get_environment_variable_value
 
 
 log = logging.getLogger(__name__)
@@ -375,7 +376,7 @@ def create_function(cfg, path_to_zip_file):
         kwargs.update(
             Environment={
                 'Variables': {
-                    key: value
+                    key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
                 }
@@ -422,7 +423,7 @@ def update_function(cfg, path_to_zip_file):
         kwargs.update(
             Environment={
                 'Variables': {
-                    key: value
+                    key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
                 }
