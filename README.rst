@@ -12,6 +12,14 @@ python-λ
 
 Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
+NOTE: CHANGES FROM BASE REPOSITORY
+==================================
+
+* Adding Python 3.6 support for the local environment & the lambda runtime
+* Supports "secret" environment variable values by reading them from the local environment during deploy instead of using hard-coded ones in the config file.
+* You can install this version via pip with ``pip install --editable git+https://github.com/asaolabs/python-lambda#egg=python-lambda``
+
+
 A call for contributors
 =======================
 With python-lambda and `pytube <https://github.com/nficano/pytube/>`_ both continuing to gain momentum, I'm calling for contributors to help build out new features, review pull requests, fix bugs, and maintain overall code quality. If you're interested, please email me at nficano[at]gmail.com.
@@ -28,7 +36,7 @@ The *Python-Lambda* library takes away the guess work of developing your Python-
 Requirements
 ============
 
-* Python 2.7 (At the time of writing this, AWS Lambda only supports Python 2.7).
+* Python 2.7 & 3.6 (At the time of writing this, AWS Lambda only supports Python 2.7/3.6).
 * Pip (~8.1.1)
 * Virtualenv (~15.0.0)
 * Virtualenvwrapper (~4.7.1)
@@ -160,6 +168,13 @@ Lambda functions support environment variables. In order to set environment vari
   environment_variables:
     env1: foo
     env2: baz
+
+You can also keep "secrets" out of your config file by using the following syntax ``${}`` to read the values from your current/local environment.
+
+.. code:: yaml
+
+  environment_variables:
+    env3: ${LOCAL_ENVIRONMENT_VARIABLE_NAME}
 
 This would create environment variables in the lambda instance upon deploy. If your functions don't need environment variables, simply leave this section out of your config.
 

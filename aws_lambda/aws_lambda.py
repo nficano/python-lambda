@@ -20,6 +20,7 @@ from .helpers import archive
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
+from .helpers import get_environment_variable_value
 
 
 log = logging.getLogger(__name__)
@@ -344,7 +345,7 @@ def create_function(cfg, path_to_zip_file):
     """Register and upload a function to AWS Lambda."""
 
     print('Creating your new Lambda function')
-    byte_stream = read(path_to_zip_file)
+    byte_stream = read(path_to_zip_file, binary_file=True)
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
@@ -375,7 +376,7 @@ def create_function(cfg, path_to_zip_file):
         kwargs.update(
             Environment={
                 'Variables': {
-                    key: value
+                    key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
                 }
@@ -389,7 +390,7 @@ def update_function(cfg, path_to_zip_file):
     """Updates the code of an existing Lambda function"""
 
     print('Updating your Lambda function')
-    byte_stream = read(path_to_zip_file)
+    byte_stream = read(path_to_zip_file, binary_file=True)
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
@@ -422,7 +423,7 @@ def update_function(cfg, path_to_zip_file):
         kwargs.update(
             Environment={
                 'Variables': {
-                    key: value
+                    key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
                 }
