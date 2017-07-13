@@ -154,7 +154,7 @@ Now try and run:
 Environment Variables
 =====================
 Lambda functions support environment variables. In order to set environment variables for your deployed code to use, you can configure them in ``config.yaml``.  To load the
-value for the environment value at the time of deployment, you can use local environment values (see 'env3' in example code below).
+value for the environment variable at the time of deployment (instead of hard coding them in your configuration file), you can use local environment values (see 'env3' in example code below).
 
 .. code:: yaml
 
