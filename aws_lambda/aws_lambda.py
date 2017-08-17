@@ -110,6 +110,10 @@ def invoke(src, alt_event=None, verbose=False):
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
 
+    # Load environment variables from the config file into the actual environment.
+    for key, value in cfg.get('environment_variables').items():
+        os.environ[key] = value
+
     # Load and parse event file.
     if alt_event:
         path_to_event_file = os.path.join(src, alt_event)
