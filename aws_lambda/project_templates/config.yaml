@@ -3,6 +3,8 @@ region: us-east-1
 function_name: my_lambda_function
 handler: service.handler
 # role: lambda_basic_execution
+# bucket_name: my_s3_bucket
+# s3_key: 'path/to/file.zip'
 description: My first lambda function
 runtime: python2.7
 
