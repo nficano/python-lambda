@@ -475,14 +475,13 @@ def upload_s3(cfg, path_to_zip_file):
         os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
     )
     kwargs = {
-        'Bucket': cfg.get('bucket_name'),
+        'Bucket': '{}'.format(buck_name),
         'Key': cfg.get('s3_key', '{}.zip'.format(func_name)),
         'Body': byte_stream
     }
 
     client.put_object(**kwargs)
     print('Finished uploading {} to S3 bucket {}'.format(func_name, buck_name))
-
 
 def function_exists(cfg, function_name):
     """Check whether a function exists or not"""
