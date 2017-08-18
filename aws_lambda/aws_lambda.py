@@ -476,8 +476,8 @@ def upload_s3(cfg, path_to_zip_file):
     )
     kwargs = {
         'Bucket': cfg.get('bucket_name'),
-        'Key': cfg.get('s3_key', '{}'.format(func_name)),
-        'Body': {'ZipFile': byte_stream}
+        'Key': cfg.get('s3_key', '{}.zip'.format(func_name)),
+        'Body': byte_stream
     }
 
     client.put_object(**kwargs)
