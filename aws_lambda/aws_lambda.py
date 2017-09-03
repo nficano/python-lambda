@@ -15,6 +15,7 @@ import boto3
 import botocore
 import pip
 import yaml
+import md5
 
 from .helpers import archive
 from .helpers import mkdir
@@ -457,15 +458,20 @@ def upload_s3(cfg, path_to_zip_file):
     """Upload a function to AWS S3."""
 
     print('Uploading your new Lambda function')
-    byte_stream = read(path_to_zip_file, binary_file=True)
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
-
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
-
     client = get_client('s3', aws_access_key_id, aws_secret_access_key,
                         cfg.get('region'))
+    role = get_role_name(account_id, cfg.get('role', 'basic_s3_upload'))
+    byte_stream = b''
+    with open(path_to_zip_file, mode='rb') as fh:
+        byte_stream = fh.read()
+    s3_key_prefix = cfg.get('s3_key_prefix', '/dist')
+    checksum = md5.new(byte_stream).hexdigest()
+    timestamp = str(time.time())
+    filename = '{prefix}{checksum}-{ts}.zip'.format(prefix=s3_key_prefix, checksum=checksum, ts=timestamp)
+    print(filename)
 
     # Do we prefer development variable over config?
     buck_name = (
@@ -476,7 +482,7 @@ def upload_s3(cfg, path_to_zip_file):
     )
     kwargs = {
         'Bucket': '{}'.format(buck_name),
-        'Key': cfg.get('s3_key', '{}.zip'.format(func_name)),
+        'Key': '{}'.format(filename),
         'Body': byte_stream
     }
 
