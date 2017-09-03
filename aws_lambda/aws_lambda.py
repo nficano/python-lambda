@@ -471,7 +471,6 @@ def upload_s3(cfg, path_to_zip_file):
     checksum = md5.new(byte_stream).hexdigest()
     timestamp = str(time.time())
     filename = '{prefix}{checksum}-{ts}.zip'.format(prefix=s3_key_prefix, checksum=checksum, ts=timestamp)
-    print(filename)
 
     # Do we prefer development variable over config?
     buck_name = (
