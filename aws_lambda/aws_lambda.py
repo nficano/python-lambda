@@ -15,7 +15,7 @@ import boto3
 import botocore
 import pip
 import yaml
-import md5
+import hashlib
 
 from .helpers import archive
 from .helpers import mkdir
@@ -468,7 +468,7 @@ def upload_s3(cfg, path_to_zip_file):
     with open(path_to_zip_file, mode='rb') as fh:
         byte_stream = fh.read()
     s3_key_prefix = cfg.get('s3_key_prefix', '/dist')
-    checksum = md5.new(byte_stream).hexdigest()
+    checksum = hashlib.new('md5', byte_stream).hexdigest()
     timestamp = str(time.time())
     filename = '{prefix}{checksum}-{ts}.zip'.format(prefix=s3_key_prefix, checksum=checksum, ts=timestamp)
 
