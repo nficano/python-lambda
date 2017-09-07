@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import hashlib
 import json
 import logging
 import os
@@ -15,13 +16,12 @@ import boto3
 import botocore
 import pip
 import yaml
-import hashlib
 
 from .helpers import archive
+from .helpers import get_environment_variable_value
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
-from .helpers import get_environment_variable_value
 
 
 log = logging.getLogger(__name__)
@@ -47,11 +47,13 @@ def cleanup_old_versions(src, keep_last_versions):
         aws_access_key_id = cfg.get('aws_access_key_id')
         aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-        client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                            cfg.get('region'))
+        client = get_client(
+            'lambda', aws_access_key_id, aws_secret_access_key,
+            cfg.get('region'),
+        )
 
         response = client.list_versions_by_function(
-            FunctionName=cfg.get('function_name')
+            FunctionName=cfg.get('function_name'),
         )
         versions = response.get('Versions')
         if len(response.get('Versions')) < keep_last_versions:
@@ -63,7 +65,7 @@ def cleanup_old_versions(src, keep_last_versions):
                 try:
                     client.delete_function(
                         FunctionName=cfg.get('function_name'),
-                        Qualifier=version_number
+                        Qualifier=version_number,
                     )
                 except botocore.exceptions.ClientError as e:
                     print('Skipping Version {}: {}'
@@ -95,6 +97,7 @@ def deploy(src, requirements=False, local_package=None):
     else:
         create_function(cfg, path_to_zip_file)
 
+
 def upload(src, requirements=False, local_package=None):
     """Uploads a new function to AWS S3.
 
@@ -117,6 +120,7 @@ def upload(src, requirements=False, local_package=None):
 
     upload_s3(cfg, path_to_zip_file)
 
+
 def invoke(src, alt_event=None, verbose=False):
     """Simulates a call to your function.
 
@@ -132,7 +136,8 @@ def invoke(src, alt_event=None, verbose=False):
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
 
-    # Load environment variables from the config file into the actual environment.
+    # Load environment variables from the config file into the actual
+    # environment.
     for key, value in cfg.get('environment_variables').items():
         os.environ[key] = value
 
@@ -177,7 +182,8 @@ def init(src, minimal=False):
     """
 
     templates_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'project_templates')
+        os.path.dirname(os.path.abspath(__file__)), 'project_templates',
+    )
     for filename in os.listdir(templates_path):
         if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
@@ -213,22 +219,28 @@ def build(src, requirements=False, local_package=None):
     output_filename = '{0}-{1}.zip'.format(timestamp(), function_name)
 
     path_to_temp = mkdtemp(prefix='aws-lambda')
-    pip_install_to_target(path_to_temp,
-                          requirements=requirements,
-                          local_package=local_package)
+    pip_install_to_target(
+        path_to_temp,
+        requirements=requirements,
+        local_package=local_package,
+    )
 
     # Hack for Zope.
     if 'zope' in os.listdir(path_to_temp):
-        print('Zope packages detected; fixing Zope package paths to '
-              'make them importable.')
+        print(
+            'Zope packages detected; fixing Zope package paths to '
+            'make them importable.',
+        )
         # Touch.
         with open(os.path.join(path_to_temp, 'zope/__init__.py'), 'wb'):
             pass
 
     # Gracefully handle whether ".zip" was included in the filename or not.
-    output_filename = ('{0}.zip'.format(output_filename)
-                       if not output_filename.endswith('.zip')
-                       else output_filename)
+    output_filename = (
+        '{0}.zip'.format(output_filename)
+        if not output_filename.endswith('.zip')
+        else output_filename
+    )
 
     files = []
     for filename in os.listdir(src):
@@ -364,7 +376,7 @@ def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
         client,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
-        region_name=region
+        region_name=region,
     )
 
 
@@ -379,8 +391,10 @@ def create_function(cfg, path_to_zip_file):
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
     role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
 
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
+    client = get_client(
+        'lambda', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
 
     # Do we prefer development variable over config?
     func_name = (
@@ -396,7 +410,7 @@ def create_function(cfg, path_to_zip_file):
         'Description': cfg.get('description'),
         'Timeout': cfg.get('timeout', 15),
         'MemorySize': cfg.get('memory_size', 512),
-        'Publish': True
+        'Publish': True,
     }
 
     if 'environment_variables' in cfg:
@@ -406,8 +420,8 @@ def create_function(cfg, path_to_zip_file):
                     key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
-                }
-            }
+                },
+            },
         )
 
     client.create_function(**kwargs)
@@ -424,13 +438,15 @@ def update_function(cfg, path_to_zip_file):
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
     role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
 
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
+    client = get_client(
+        'lambda', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
 
     client.update_function_code(
         FunctionName=cfg.get('function_name'),
         ZipFile=byte_stream,
-        Publish=True
+        Publish=True,
     )
 
     kwargs = {
@@ -442,8 +458,8 @@ def update_function(cfg, path_to_zip_file):
         'MemorySize': cfg.get('memory_size', 512),
         'VpcConfig': {
             'SubnetIds': cfg.get('subnet_ids', []),
-            'SecurityGroupIds': cfg.get('security_group_ids', [])
-        }
+            'SecurityGroupIds': cfg.get('security_group_ids', []),
+        },
     }
 
     if 'environment_variables' in cfg:
@@ -453,11 +469,12 @@ def update_function(cfg, path_to_zip_file):
                     key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
-                }
-            }
+                },
+            },
         )
 
     client.update_function_configuration(**kwargs)
+
 
 def upload_s3(cfg, path_to_zip_file):
     """Upload a function to AWS S3."""
@@ -465,17 +482,19 @@ def upload_s3(cfg, path_to_zip_file):
     print('Uploading your new Lambda function')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
-    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    client = get_client('s3', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
-    role = get_role_name(account_id, cfg.get('role', 'basic_s3_upload'))
+    client = get_client(
+        's3', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
     byte_stream = b''
     with open(path_to_zip_file, mode='rb') as fh:
         byte_stream = fh.read()
     s3_key_prefix = cfg.get('s3_key_prefix', '/dist')
     checksum = hashlib.new('md5', byte_stream).hexdigest()
     timestamp = str(time.time())
-    filename = '{prefix}{checksum}-{ts}.zip'.format(prefix=s3_key_prefix, checksum=checksum, ts=timestamp)
+    filename = '{prefix}{checksum}-{ts}.zip'.format(
+        prefix=s3_key_prefix, checksum=checksum, ts=timestamp,
+    )
 
     # Do we prefer development variable over config?
     buck_name = (
@@ -487,19 +506,22 @@ def upload_s3(cfg, path_to_zip_file):
     kwargs = {
         'Bucket': '{}'.format(buck_name),
         'Key': '{}'.format(filename),
-        'Body': byte_stream
+        'Body': byte_stream,
     }
 
     client.put_object(**kwargs)
     print('Finished uploading {} to S3 bucket {}'.format(func_name, buck_name))
+
 
 def function_exists(cfg, function_name):
     """Check whether a function exists or not"""
 
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
+    client = get_client(
+        'lambda', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
     functions = client.list_functions().get('Functions', [])
     for fn in functions:
         if fn.get('FunctionName') == function_name:

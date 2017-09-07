@@ -8,7 +8,7 @@ with open('README.rst') as readme_file:
     readme = readme_file.read()
 
 requirements = pip.req.parse_requirements(
-    'requirements.txt', session=pip.download.PipSession()
+    'requirements.txt', session=pip.download.PipSession(),
 )
 pip_requirements = [str(r.req) for r in requirements]
 
@@ -50,5 +50,5 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
 )
