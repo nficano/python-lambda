@@ -165,6 +165,16 @@ value for the environment variable at the time of deployment (instead of hard co
 
 This would create environment variables in the lambda instance upon deploy. If your functions don't need environment variables, simply leave this section out of your config.
 
+Uploading to S3
+===============
+You may find that you do not need the toolkit to fully deploy your Lambda or that your code bundle is too large to upload via the API.  You can use the `upload` command to send the bundle to an S3 bucket of your choosing.
+Before doing this, you will need to set the following variables in `config.yaml`:
+```
+role: basic_s3_upload
+bucket_name: 'example-bucket'
+s3_key_prefix: 'path/to/file/'
+```
+Your role must have `s3:PutObject` permission on the bucket/key that you specify for the upload to work properly. Once you have that set, you can execute `lambda upload` to initiate the transfer.
 
 Development
 ===========
