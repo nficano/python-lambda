@@ -15,6 +15,7 @@ import boto3
 import botocore
 import pip
 import yaml
+import hashlib
 
 from .helpers import archive
 from .helpers import mkdir
@@ -94,6 +95,27 @@ def deploy(src, requirements=False, local_package=None):
     else:
         create_function(cfg, path_to_zip_file)
 
+def upload(src, requirements=False, local_package=None):
+    """Uploads a new function to AWS S3.
+
+    :param str src:
+        The path to your Lambda ready project (folder must contain a valid
+        config.yaml and handler module (e.g.: service.py).
+    :param str local_package:
+        The path to a local package with should be included in the deploy as
+        well (and/or is not available on PyPi)
+    """
+    # Load and parse the config file.
+    path_to_config_file = os.path.join(src, 'config.yaml')
+    cfg = read(path_to_config_file, loader=yaml.load)
+
+    # Copy all the pip dependencies required to run your code into a temporary
+    # folder then add the handler file in the root of this directory.
+    # Zip the contents of this folder into a single file and output to the dist
+    # directory.
+    path_to_zip_file = build(src, requirements, local_package)
+
+    upload_s3(cfg, path_to_zip_file)
 
 def invoke(src, alt_event=None, verbose=False):
     """Simulates a call to your function.
@@ -109,6 +131,10 @@ def invoke(src, alt_event=None, verbose=False):
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
+
+    # Load environment variables from the config file into the actual environment.
+    for key, value in cfg.get('environment_variables').items():
+        os.environ[key] = value
 
     # Load and parse event file.
     if alt_event:
@@ -211,8 +237,9 @@ def build(src, requirements=False, local_package=None):
                 continue
             if filename == 'config.yaml':
                 continue
-            print('Bundling: %r' % filename)
-            files.append(os.path.join(src, filename))
+        # TODO: Check subdirectories for '.DS_Store' files
+        print('Bundling: %r' % filename)
+        files.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
@@ -432,6 +459,39 @@ def update_function(cfg, path_to_zip_file):
 
     client.update_function_configuration(**kwargs)
 
+def upload_s3(cfg, path_to_zip_file):
+    """Upload a function to AWS S3."""
+
+    print('Uploading your new Lambda function')
+    aws_access_key_id = cfg.get('aws_access_key_id')
+    aws_secret_access_key = cfg.get('aws_secret_access_key')
+    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
+    client = get_client('s3', aws_access_key_id, aws_secret_access_key,
+                        cfg.get('region'))
+    role = get_role_name(account_id, cfg.get('role', 'basic_s3_upload'))
+    byte_stream = b''
+    with open(path_to_zip_file, mode='rb') as fh:
+        byte_stream = fh.read()
+    s3_key_prefix = cfg.get('s3_key_prefix', '/dist')
+    checksum = hashlib.new('md5', byte_stream).hexdigest()
+    timestamp = str(time.time())
+    filename = '{prefix}{checksum}-{ts}.zip'.format(prefix=s3_key_prefix, checksum=checksum, ts=timestamp)
+
+    # Do we prefer development variable over config?
+    buck_name = (
+        os.environ.get('S3_BUCKET_NAME') or cfg.get('bucket_name')
+    )
+    func_name = (
+        os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
+    )
+    kwargs = {
+        'Bucket': '{}'.format(buck_name),
+        'Key': '{}'.format(filename),
+        'Body': byte_stream
+    }
+
+    client.put_object(**kwargs)
+    print('Finished uploading {} to S3 bucket {}'.format(func_name, buck_name))
 
 def function_exists(cfg, function_name):
     """Check whether a function exists or not"""

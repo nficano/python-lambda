@@ -2,9 +2,14 @@ region: us-east-1
 
 function_name: my_lambda_function
 handler: service.handler
-# role: lambda_basic_execution
 description: My first lambda function
 runtime: python2.7
+# role: lambda_basic_execution
+
+# S3 upload requires appropriate role with s3:PutObject permission
+# (ex. basic_s3_upload), a destination bucket, and the key prefix
+# bucket_name: 'example-bucket'
+# s3_key_prefix: 'path/to/file/'
 
 # if access key and secret are left blank, boto will use the credentials
 # defined in the [default] section of ~/.aws/credentials.
