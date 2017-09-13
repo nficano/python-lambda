@@ -245,7 +245,9 @@ def build(src, requirements=False, local_package=None):
 
     # Allow definition of source code directories we want to build into our zipped package.
     build_config = defaultdict(**cfg.get('build', {}))
-    source_directories = [d.strip() for d in build_config.get('source_directories', '').split(',')]
+    build_source_directories = build_config.get('source_directories', '')
+    build_source_directories = build_source_directories if build_source_directories is not None else ''
+    source_directories = [d.strip() for d in build_source_directories.split(',')]
 
     files = []
     for filename in os.listdir(src):
