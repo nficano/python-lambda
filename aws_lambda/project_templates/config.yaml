@@ -25,3 +25,7 @@ aws_secret_access_key:
 environment_variables:
     env_1: foo
     env_2: baz
+
+# Build options
+build:
+  include_source_directories: lib # a common delimited list of directories in your project root that contains source to package.

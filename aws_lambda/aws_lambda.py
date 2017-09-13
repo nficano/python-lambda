@@ -9,8 +9,9 @@ import sys
 import time
 from imp import load_source
 from shutil import copy
-from shutil import copyfile
+from shutil import copyfile, copytree
 from tempfile import mkdtemp
+from collections import defaultdict
 
 import boto3
 import botocore
@@ -242,6 +243,10 @@ def build(src, requirements=False, local_package=None):
         else output_filename
     )
 
+    # Allow definition of source code directories we want to build into our zipped package.
+    build_config = defaultdict(**cfg.get('build', {}))
+    source_directories = [d.strip() for d in build_config.get('source_directories', '').split(',')]
+
     files = []
     for filename in os.listdir(src):
         if os.path.isfile(filename):
@@ -249,17 +254,21 @@ def build(src, requirements=False, local_package=None):
                 continue
             if filename == 'config.yaml':
                 continue
-        # TODO: Check subdirectories for '.DS_Store' files
-        print('Bundling: %r' % filename)
-        files.append(os.path.join(src, filename))
+        elif os.path.isdir(filename) and filename in source_directories:
+            print('Bundling directory: %r' % filename)
+            files.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
     for f in files:
-        _, filename = os.path.split(f)
+        if os.path.isfile(f):
+            _, filename = os.path.split(f)
 
-        # Copy handler file into root of the packages folder.
-        copyfile(f, os.path.join(path_to_temp, filename))
+            # Copy handler file into root of the packages folder.
+            copyfile(f, os.path.join(path_to_temp, filename))
+        elif os.path.isdir(f):
+            destination_folder = os.path.join(path_to_temp, f[len(src) + 1:])
+            copytree(f, destination_folder)
 
     # Zip them together into a single file.
     # TODO: Delete temp directory created once the archive has been compiled.
