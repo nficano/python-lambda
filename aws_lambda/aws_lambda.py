@@ -535,8 +535,13 @@ def function_exists(cfg, function_name):
         'lambda', aws_access_key_id, aws_secret_access_key,
         cfg.get('region'),
     )
-    functions = client.list_functions().get('Functions', [])
-    for fn in functions:
-        if fn.get('FunctionName') == function_name:
-            return True
-    return False
+
+    # Need to loop through until we get all of the lambda functions returned.  It appears
+    # to be only returning 50 functions at a time.
+    functions = []
+    functions_resp = client.list_functions()
+    functions.extend([f['FunctionName'] for f in functions_resp.get('Functions', [])])
+    while('NextMarker' in functions_resp):
+        functions_resp = client.list_functions(Marker=functions_resp.get('NextMarker'))
+        functions.extend([f['FunctionName'] for f in functions_resp.get('Functions', [])])
+    return function_name in functions
