@@ -15,47 +15,75 @@ def cli():
     pass
 
 
-@click.command(help="Create a new function for Lambda.")
-@click.argument('folder', nargs=-1, type=click.Path(file_okay=False, writable=True))
+@click.command(help='Create a new function for Lambda.')
+@click.argument(
+    'folder', nargs=-1,
+    type=click.Path(file_okay=False, writable=True),
+)
 def init(folder):
     path = CURRENT_DIR
     if len(folder) > 0:
-        path = "{}/{}".format(CURRENT_DIR, folder[0])
+        path = os.path.join(CURRENT_DIR, *folder)
         if not os.path.exists(path):
             os.makedirs(path)
     aws_lambda.init(path)
 
 
-@click.command(help="Bundles package for deployment.")
-@click.option('--use-requirements', default=False, is_flag=True, help='Install all packages defined in requirements.txt')
-@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path(), multiple=True)
+@click.command(help='Bundles package for deployment.')
+@click.option(
+    '--use-requirements', default=False, is_flag=True,
+    help='Install all packages defined in requirements.txt',
+)
+@click.option(
+    '--local-package', default=None, type=click.Path(),
+    help='Install local package as well.', multiple=True,
+)
 def build(use_requirements, local_package):
     aws_lambda.build(CURRENT_DIR, use_requirements, local_package)
 
 
-@click.command(help="Run a local test of your function.")
+@click.command(help='Run a local test of your function.')
 @click.option('--event-file', default=None, help='Alternate event file.')
 @click.option('--verbose', '-v', is_flag=True)
 def invoke(event_file, verbose):
     aws_lambda.invoke(CURRENT_DIR, event_file, verbose)
 
 
-@click.command(help="Register and deploy your code to lambda.")
-@click.option('--use-requirements', default=False, is_flag=True, help='Install all packages defined in requirements.txt')
-@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path(), multiple=True)
+@click.command(help='Register and deploy your code to lambda.')
+@click.option(
+    '--use-requirements', default=False, is_flag=True,
+    help='Install all packages defined in requirements.txt',
+)
+@click.option(
+    '--local-package', default=None, type=click.Path(),
+    help='Install local package as well.', multiple=True,
+)
 def deploy(use_requirements, local_package):
     aws_lambda.deploy(CURRENT_DIR, use_requirements, local_package)
 
-@click.command(help="Upload your lambda to S3.")
-@click.option('--use-requirements', default=False, is_flag=True, help='Install all packages defined in requirements.txt')
-@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path(), multiple=True)
+
+@click.command(help='Upload your lambda to S3.')
+@click.option(
+    '--use-requirements', default=False, is_flag=True,
+    help='Install all packages defined in requirements.txt',
+)
+@click.option(
+    '--local-package', default=None, type=click.Path(),
+    help='Install local package as well.', multiple=True,
+)
 def upload(use_requirements, local_package):
     aws_lambda.upload(CURRENT_DIR, use_requirements, local_package)
 
-@click.command(help="Delete old versions of your functions")
-@click.option("--keep-last", type=int, prompt="Please enter the number of recent versions to keep")
+
+@click.command(help='Delete old versions of your functions')
+@click.option(
+    '--keep-last', type=int, prompt=(
+    'Please enter the number of recent versions to keep'
+    ),
+)
 def cleanup(keep_last):
     aws_lambda.cleanup_old_versions(CURRENT_DIR, keep_last)
+
 
 if __name__ == '__main__':
     cli.add_command(init)
