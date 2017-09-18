@@ -7,11 +7,12 @@ import logging
 import os
 import sys
 import time
+from collections import defaultdict
 from imp import load_source
 from shutil import copy
-from shutil import copyfile, copytree
+from shutil import copyfile
+from shutil import copytree
 from tempfile import mkdtemp
-from collections import defaultdict
 
 import boto3
 import botocore
@@ -26,7 +27,7 @@ from .helpers import timestamp
 
 
 ARN_PREFIXES = {
-    'us-gov-west-1': 'aws-us-gov'
+    'us-gov-west-1': 'aws-us-gov',
 }
 
 log = logging.getLogger(__name__)
@@ -247,11 +248,18 @@ def build(src, requirements=False, local_package=None):
         else output_filename
     )
 
-    # Allow definition of source code directories we want to build into our zipped package.
+    # Allow definition of source code directories we want to build into our
+    # zipped package.
     build_config = defaultdict(**cfg.get('build', {}))
     build_source_directories = build_config.get('source_directories', '')
-    build_source_directories = build_source_directories if build_source_directories is not None else ''
-    source_directories = [d.strip() for d in build_source_directories.split(',')]
+    build_source_directories = (
+        build_source_directories
+        if build_source_directories is not None
+        else ''
+    )
+    source_directories = [
+        d.strip() for d in build_source_directories.split(',')
+    ]
 
     files = []
     for filename in os.listdir(src):
@@ -407,7 +415,10 @@ def create_function(cfg, path_to_zip_file):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(cfg.get('region'), account_id, cfg.get('role', 'lambda_basic_execution'))
+    role = get_role_name(
+        cfg.get('region'), account_id,
+        cfg.get('role', 'lambda_basic_execution'),
+    )
 
     client = get_client(
         'lambda', aws_access_key_id, aws_secret_access_key,
@@ -454,7 +465,10 @@ def update_function(cfg, path_to_zip_file):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(cfg.get('region'), account_id, cfg.get('role', 'lambda_basic_execution'))
+    role = get_role_name(
+        cfg.get('region'), account_id,
+        cfg.get('role', 'lambda_basic_execution'),
+    )
 
     client = get_client(
         'lambda', aws_access_key_id, aws_secret_access_key,
@@ -541,12 +555,18 @@ def function_exists(cfg, function_name):
         cfg.get('region'),
     )
 
-    # Need to loop through until we get all of the lambda functions returned.  It appears
-    # to be only returning 50 functions at a time.
+    # Need to loop through until we get all of the lambda functions returned.
+    # It appears to be only returning 50 functions at a time.
     functions = []
     functions_resp = client.list_functions()
-    functions.extend([f['FunctionName'] for f in functions_resp.get('Functions', [])])
+    functions.extend([
+        f['FunctionName'] for f in functions_resp.get('Functions', [])
+    ])
     while('NextMarker' in functions_resp):
-        functions_resp = client.list_functions(Marker=functions_resp.get('NextMarker'))
-        functions.extend([f['FunctionName'] for f in functions_resp.get('Functions', [])])
+        functions_resp = client.list_functions(
+            Marker=functions_resp.get('NextMarker'),
+        )
+        functions.extend([
+            f['FunctionName'] for f in functions_resp.get('Functions', [])
+        ])
     return function_name in functions
