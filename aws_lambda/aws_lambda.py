@@ -478,7 +478,7 @@ def update_function(cfg, path_to_zip_file):
     client.update_function_code(
         FunctionName=cfg.get('function_name'),
         ZipFile=byte_stream,
-        Publish=True,
+        Publish=False,
     )
 
     kwargs = {
@@ -506,6 +506,11 @@ def update_function(cfg, path_to_zip_file):
         )
 
     client.update_function_configuration(**kwargs)
+
+    # Publish last, so versions pick up eventually updated description...
+    client.publish_version(
+        FunctionName=cfg.get('function_name'),
+    )
 
 
 def upload_s3(cfg, path_to_zip_file):
