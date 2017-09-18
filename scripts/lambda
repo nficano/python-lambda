@@ -77,9 +77,8 @@ def upload(use_requirements, local_package):
 
 @click.command(help='Delete old versions of your functions')
 @click.option(
-    '--keep-last', type=int, prompt=(
-    'Please enter the number of recent versions to keep'
-    ),
+    '--keep-last', type=int,
+    prompt='Please enter the number of recent versions to keep',
 )
 def cleanup(keep_last):
     aws_lambda.cleanup_old_versions(CURRENT_DIR, keep_last)
