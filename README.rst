@@ -172,9 +172,9 @@ Before doing this, you will need to set the following variables in ``config.yaml
 
 .. code:: yaml
 
-role: basic_s3_upload
-bucket_name: 'example-bucket'
-s3_key_prefix: 'path/to/file/'
+    role: basic_s3_upload
+    bucket_name: 'example-bucket'
+    s3_key_prefix: 'path/to/file/'
 
 Your role must have ``s3:PutObject`` permission on the bucket/key that you specify for the upload to work properly. Once you have that set, you can execute ``lambda upload`` to initiate the transfer.
 
