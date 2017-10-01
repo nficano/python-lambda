@@ -78,12 +78,14 @@ def deploy(use_requirements, local_package):
 def upload(use_requirements, local_package):
     aws_lambda.upload(CURRENT_DIR, use_requirements, local_package)
 
+@click.command(help="Deploy your lambda via S3.")
+@click.option('--use-requirements', default=False, is_flag=True, help='Install all packages defined in requirements.txt')
+@click.option('--local-package', default=None, help='Install local package as well.', type=click.Path(), multiple=True)
+def deploy_s3(use_requirements, local_package):
+    aws_lambda.deploy_s3(CURRENT_DIR, use_requirements, local_package)
 
-@click.command(help='Delete old versions of your functions')
-@click.option(
-    '--keep-last', type=int,
-    prompt='Please enter the number of recent versions to keep',
-)
+@click.command(help="Delete old versions of your functions")
+@click.option("--keep-last", type=int, prompt="Please enter the number of recent versions to keep")
 def cleanup(keep_last):
     aws_lambda.cleanup_old_versions(CURRENT_DIR, keep_last)
 
@@ -93,6 +95,7 @@ if __name__ == '__main__':
     cli.add_command(invoke)
     cli.add_command(deploy)
     cli.add_command(upload)
+    cli.add_command(deploy_s3)
     cli.add_command(build)
     cli.add_command(cleanup)
     cli()

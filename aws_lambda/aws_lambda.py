@@ -103,6 +103,32 @@ def deploy(src, requirements=False, local_package=None):
     else:
         create_function(cfg, path_to_zip_file)
 
+def deploy_s3(src, requirements=False, local_package=None):
+    """Deploys a new function via AWS S3.
+
+    :param str src:
+        The path to your Lambda ready project (folder must contain a valid
+        config.yaml and handler module (e.g.: service.py).
+    :param str local_package:
+        The path to a local package with should be included in the deploy as
+        well (and/or is not available on PyPi)
+    """
+    # Load and parse the config file.
+    path_to_config_file = os.path.join(src, 'config.yaml')
+    cfg = read(path_to_config_file, loader=yaml.load)
+
+    # Copy all the pip dependencies required to run your code into a temporary
+    # folder then add the handler file in the root of this directory.
+    # Zip the contents of this folder into a single file and output to the dist
+    # directory.
+    path_to_zip_file = build(src, requirements, local_package)
+
+    use_s3 = True
+    s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
+    if function_exists(cfg, cfg.get('function_name')):
+        update_function(cfg, path_to_zip_file, use_s3, s3_file)
+    else:
+        create_function(cfg, path_to_zip_file, use_s3, s3_file)
 
 def upload(src, requirements=False, local_package=None):
     """Uploads a new function to AWS S3.
@@ -406,7 +432,7 @@ def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
     )
 
 
-def create_function(cfg, path_to_zip_file):
+def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     """Register and upload a function to AWS Lambda."""
 
     print('Creating your new Lambda function')
@@ -426,21 +452,41 @@ def create_function(cfg, path_to_zip_file):
     )
 
     # Do we prefer development variable over config?
+    buck_name = (
+        os.environ.get('S3_BUCKET_NAME') or cfg.get('bucket_name')
+    )
     func_name = (
         os.environ.get('LAMBDA_FUNCTION_NAME') or cfg.get('function_name')
     )
     print('Creating lambda function with name: {}'.format(func_name))
-    kwargs = {
-        'FunctionName': func_name,
-        'Runtime': cfg.get('runtime', 'python2.7'),
-        'Role': role,
-        'Handler': cfg.get('handler'),
-        'Code': {'ZipFile': byte_stream},
-        'Description': cfg.get('description'),
-        'Timeout': cfg.get('timeout', 15),
-        'MemorySize': cfg.get('memory_size', 512),
-        'Publish': True,
-    }
+
+    if use_s3 == True:
+        kwargs = {
+            'FunctionName': func_name,
+            'Runtime': cfg.get('runtime', 'python2.7'),
+            'Role': role,
+            'Handler': cfg.get('handler'),
+            'Code': {
+                'S3Bucket': '{}'.format(buck_name),
+                'S3Key': '{}'.format(s3_file)
+            },
+            'Description': cfg.get('description'),
+            'Timeout': cfg.get('timeout', 15),
+            'MemorySize': cfg.get('memory_size', 512),
+            'Publish': True
+        }
+    else:
+        kwargs = {
+            'FunctionName': func_name,
+            'Runtime': cfg.get('runtime', 'python2.7'),
+            'Role': role,
+            'Handler': cfg.get('handler'),
+            'Code': {'ZipFile': byte_stream},
+            'Description': cfg.get('description'),
+            'Timeout': cfg.get('timeout', 15),
+            'MemorySize': cfg.get('memory_size', 512),
+            'Publish': True
+        }
 
     if 'environment_variables' in cfg:
         kwargs.update(
@@ -456,7 +502,7 @@ def create_function(cfg, path_to_zip_file):
     client.create_function(**kwargs)
 
 
-def update_function(cfg, path_to_zip_file):
+def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     """Updates the code of an existing Lambda function"""
 
     print('Updating your Lambda function')
@@ -475,11 +521,24 @@ def update_function(cfg, path_to_zip_file):
         cfg.get('region'),
     )
 
-    client.update_function_code(
-        FunctionName=cfg.get('function_name'),
-        ZipFile=byte_stream,
-        Publish=False,
+    # Do we prefer development variable over config?
+    buck_name = (
+        os.environ.get('S3_BUCKET_NAME') or cfg.get('bucket_name')
     )
+
+    if use_s3 == True:
+        client.update_function_code(
+            FunctionName=cfg.get('function_name'),
+            S3Bucket='{}'.format(buck_name),
+            S3Key='{}'.format(s3_file),
+            Publish=True
+        )
+    else:
+        client.update_function_code(
+            FunctionName=cfg.get('function_name'),
+            ZipFile=byte_stream,
+            Publish=True
+        )
 
     kwargs = {
         'FunctionName': cfg.get('function_name'),
@@ -507,13 +566,7 @@ def update_function(cfg, path_to_zip_file):
 
     client.update_function_configuration(**kwargs)
 
-    # Publish last, so versions pick up eventually updated description...
-    client.publish_version(
-        FunctionName=cfg.get('function_name'),
-    )
-
-
-def upload_s3(cfg, path_to_zip_file):
+def upload_s3(cfg, path_to_zip_file, *use_s3):
     """Upload a function to AWS S3."""
 
     print('Uploading your new Lambda function')
@@ -548,6 +601,8 @@ def upload_s3(cfg, path_to_zip_file):
 
     client.put_object(**kwargs)
     print('Finished uploading {} to S3 bucket {}'.format(func_name, buck_name))
+    if use_s3 == True:
+        return filename
 
 
 def function_exists(cfg, function_name):
