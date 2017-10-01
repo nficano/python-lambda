@@ -1,28 +1,34 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import hashlib
 import json
 import logging
 import os
 import sys
 import time
+from collections import defaultdict
 from imp import load_source
 from shutil import copy
 from shutil import copyfile
+from shutil import copytree
 from tempfile import mkdtemp
 
 import boto3
 import botocore
 import pip
 import yaml
-import hashlib
 
 from .helpers import archive
+from .helpers import get_environment_variable_value
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
-from .helpers import get_environment_variable_value
 
+
+ARN_PREFIXES = {
+    'us-gov-west-1': 'aws-us-gov',
+}
 
 log = logging.getLogger(__name__)
 
@@ -47,11 +53,13 @@ def cleanup_old_versions(src, keep_last_versions):
         aws_access_key_id = cfg.get('aws_access_key_id')
         aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-        client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                            cfg.get('region'))
+        client = get_client(
+            'lambda', aws_access_key_id, aws_secret_access_key,
+            cfg.get('region'),
+        )
 
         response = client.list_versions_by_function(
-            FunctionName=cfg.get('function_name')
+            FunctionName=cfg.get('function_name'),
         )
         versions = response.get('Versions')
         if len(response.get('Versions')) < keep_last_versions:
@@ -63,7 +71,7 @@ def cleanup_old_versions(src, keep_last_versions):
                 try:
                     client.delete_function(
                         FunctionName=cfg.get('function_name'),
-                        Qualifier=version_number
+                        Qualifier=version_number,
                     )
                 except botocore.exceptions.ClientError as e:
                     print('Skipping Version {}: {}'
@@ -144,6 +152,7 @@ def upload(src, requirements=False, local_package=None):
 
     upload_s3(cfg, path_to_zip_file)
 
+
 def invoke(src, alt_event=None, verbose=False):
     """Simulates a call to your function.
 
@@ -158,6 +167,11 @@ def invoke(src, alt_event=None, verbose=False):
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, 'config.yaml')
     cfg = read(path_to_config_file, loader=yaml.load)
+
+    # Load environment variables from the config file into the actual
+    # environment.
+    for key, value in cfg.get('environment_variables').items():
+        os.environ[key] = value
 
     # Load and parse event file.
     if alt_event:
@@ -200,7 +214,8 @@ def init(src, minimal=False):
     """
 
     templates_path = os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), 'project_templates')
+        os.path.dirname(os.path.abspath(__file__)), 'project_templates',
+    )
     for filename in os.listdir(templates_path):
         if (minimal and filename == 'event.json') or filename.endswith('.pyc'):
             continue
@@ -236,22 +251,41 @@ def build(src, requirements=False, local_package=None):
     output_filename = '{0}-{1}.zip'.format(timestamp(), function_name)
 
     path_to_temp = mkdtemp(prefix='aws-lambda')
-    pip_install_to_target(path_to_temp,
-                          requirements=requirements,
-                          local_package=local_package)
+    pip_install_to_target(
+        path_to_temp,
+        requirements=requirements,
+        local_package=local_package,
+    )
 
     # Hack for Zope.
     if 'zope' in os.listdir(path_to_temp):
-        print('Zope packages detected; fixing Zope package paths to '
-              'make them importable.')
+        print(
+            'Zope packages detected; fixing Zope package paths to '
+            'make them importable.',
+        )
         # Touch.
         with open(os.path.join(path_to_temp, 'zope/__init__.py'), 'wb'):
             pass
 
     # Gracefully handle whether ".zip" was included in the filename or not.
-    output_filename = ('{0}.zip'.format(output_filename)
-                       if not output_filename.endswith('.zip')
-                       else output_filename)
+    output_filename = (
+        '{0}.zip'.format(output_filename)
+        if not output_filename.endswith('.zip')
+        else output_filename
+    )
+
+    # Allow definition of source code directories we want to build into our
+    # zipped package.
+    build_config = defaultdict(**cfg.get('build', {}))
+    build_source_directories = build_config.get('source_directories', '')
+    build_source_directories = (
+        build_source_directories
+        if build_source_directories is not None
+        else ''
+    )
+    source_directories = [
+        d.strip() for d in build_source_directories.split(',')
+    ]
 
     files = []
     for filename in os.listdir(src):
@@ -262,14 +296,21 @@ def build(src, requirements=False, local_package=None):
                 continue
             print('Bundling: %r' % filename)
             files.append(os.path.join(src, filename))
+        elif os.path.isdir(filename) and filename in source_directories:
+            print('Bundling directory: %r' % filename)
+            files.append(os.path.join(src, filename))
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
     for f in files:
-        _, filename = os.path.split(f)
+        if os.path.isfile(f):
+            _, filename = os.path.split(f)
 
-        # Copy handler file into root of the packages folder.
-        copyfile(f, os.path.join(path_to_temp, filename))
+            # Copy handler file into root of the packages folder.
+            copyfile(f, os.path.join(path_to_temp, filename))
+        elif os.path.isdir(f):
+            destination_folder = os.path.join(path_to_temp, f[len(src) + 1:])
+            copytree(f, destination_folder)
 
     # Zip them together into a single file.
     # TODO: Delete temp directory created once the archive has been compiled.
@@ -368,9 +409,10 @@ def pip_install_to_target(path, requirements=False, local_package=None):
     _install_packages(path, packages)
 
 
-def get_role_name(account_id, role):
+def get_role_name(region, account_id, role):
     """Shortcut to insert the `account_id` and `role` into the iam string."""
-    return 'arn:aws:iam::{0}:role/{1}'.format(account_id, role)
+    prefix = ARN_PREFIXES.get(region, 'aws')
+    return 'arn:{0}:iam::{1}:role/{2}'.format(prefix, account_id, role)
 
 
 def get_account_id(aws_access_key_id, aws_secret_access_key):
@@ -386,7 +428,7 @@ def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
         client,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
-        region_name=region
+        region_name=region,
     )
 
 
@@ -399,10 +441,15 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
+    role = get_role_name(
+        cfg.get('region'), account_id,
+        cfg.get('role', 'lambda_basic_execution'),
+    )
 
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
+    client = get_client(
+        'lambda', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
 
     # Do we prefer development variable over config?
     buck_name = (
@@ -448,8 +495,8 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
                     key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
-                }
-            }
+                },
+            },
         )
 
     client.create_function(**kwargs)
@@ -464,10 +511,15 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    role = get_role_name(account_id, cfg.get('role', 'lambda_basic_execution'))
+    role = get_role_name(
+        cfg.get('region'), account_id,
+        cfg.get('role', 'lambda_basic_execution'),
+    )
 
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
+    client = get_client(
+        'lambda', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
 
     # Do we prefer development variable over config?
     buck_name = (
@@ -497,8 +549,8 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
         'MemorySize': cfg.get('memory_size', 512),
         'VpcConfig': {
             'SubnetIds': cfg.get('subnet_ids', []),
-            'SecurityGroupIds': cfg.get('security_group_ids', [])
-        }
+            'SecurityGroupIds': cfg.get('security_group_ids', []),
+        },
     }
 
     if 'environment_variables' in cfg:
@@ -508,8 +560,8 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
                     key: get_environment_variable_value(value)
                     for key, value
                     in cfg.get('environment_variables').items()
-                }
-            }
+                },
+            },
         )
 
     client.update_function_configuration(**kwargs)
@@ -520,17 +572,19 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
     print('Uploading your new Lambda function')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
-    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
-    client = get_client('s3', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
-    role = get_role_name(account_id, cfg.get('role', 'basic_s3_upload'))
+    client = get_client(
+        's3', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
     byte_stream = b''
     with open(path_to_zip_file, mode='rb') as fh:
         byte_stream = fh.read()
     s3_key_prefix = cfg.get('s3_key_prefix', '/dist')
     checksum = hashlib.new('md5', byte_stream).hexdigest()
     timestamp = str(time.time())
-    filename = '{prefix}{checksum}-{ts}.zip'.format(prefix=s3_key_prefix, checksum=checksum, ts=timestamp)
+    filename = '{prefix}{checksum}-{ts}.zip'.format(
+        prefix=s3_key_prefix, checksum=checksum, ts=timestamp,
+    )
 
     # Do we prefer development variable over config?
     buck_name = (
@@ -542,7 +596,7 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
     kwargs = {
         'Bucket': '{}'.format(buck_name),
         'Key': '{}'.format(filename),
-        'Body': byte_stream
+        'Body': byte_stream,
     }
 
     client.put_object(**kwargs)
@@ -550,15 +604,29 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
     if use_s3 == True:
         return filename
 
+
 def function_exists(cfg, function_name):
     """Check whether a function exists or not"""
 
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
-    client = get_client('lambda', aws_access_key_id, aws_secret_access_key,
-                        cfg.get('region'))
-    functions = client.list_functions().get('Functions', [])
-    for fn in functions:
-        if fn.get('FunctionName') == function_name:
-            return True
-    return False
+    client = get_client(
+        'lambda', aws_access_key_id, aws_secret_access_key,
+        cfg.get('region'),
+    )
+
+    # Need to loop through until we get all of the lambda functions returned.
+    # It appears to be only returning 50 functions at a time.
+    functions = []
+    functions_resp = client.list_functions()
+    functions.extend([
+        f['FunctionName'] for f in functions_resp.get('Functions', [])
+    ])
+    while('NextMarker' in functions_resp):
+        functions_resp = client.list_functions(
+            Marker=functions_resp.get('NextMarker'),
+        )
+        functions.extend([
+            f['FunctionName'] for f in functions_resp.get('Functions', [])
+        ])
+    return function_name in functions
