@@ -170,8 +170,10 @@ def invoke(src, alt_event=None, verbose=False):
 
     # Load environment variables from the config file into the actual
     # environment.
-    for key, value in cfg.get('environment_variables').items():
-        os.environ[key] = value
+    env_vars = cfg.get('environment_variables')
+    if env_vars:
+        for key, value in env_vars.items():
+            os.environ[key] = value
 
     # Load and parse event file.
     if alt_event:
