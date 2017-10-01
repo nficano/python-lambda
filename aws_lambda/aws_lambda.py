@@ -103,6 +103,7 @@ def deploy(src, requirements=False, local_package=None):
     else:
         create_function(cfg, path_to_zip_file)
 
+
 def deploy_s3(src, requirements=False, local_package=None):
     """Deploys a new function via AWS S3.
 
@@ -129,6 +130,7 @@ def deploy_s3(src, requirements=False, local_package=None):
         update_function(cfg, path_to_zip_file, use_s3, s3_file)
     else:
         create_function(cfg, path_to_zip_file, use_s3, s3_file)
+
 
 def upload(src, requirements=False, local_package=None):
     """Uploads a new function to AWS S3.
@@ -462,7 +464,7 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     )
     print('Creating lambda function with name: {}'.format(func_name))
 
-    if use_s3 == True:
+    if use_s3:
         kwargs = {
             'FunctionName': func_name,
             'Runtime': cfg.get('runtime', 'python2.7'),
@@ -470,12 +472,12 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
             'Handler': cfg.get('handler'),
             'Code': {
                 'S3Bucket': '{}'.format(buck_name),
-                'S3Key': '{}'.format(s3_file)
+                'S3Key': '{}'.format(s3_file),
             },
             'Description': cfg.get('description'),
             'Timeout': cfg.get('timeout', 15),
             'MemorySize': cfg.get('memory_size', 512),
-            'Publish': True
+            'Publish': True,
         }
     else:
         kwargs = {
@@ -487,7 +489,7 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
             'Description': cfg.get('description'),
             'Timeout': cfg.get('timeout', 15),
             'MemorySize': cfg.get('memory_size', 512),
-            'Publish': True
+            'Publish': True,
         }
 
     if 'environment_variables' in cfg:
@@ -528,18 +530,18 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
         os.environ.get('S3_BUCKET_NAME') or cfg.get('bucket_name')
     )
 
-    if use_s3 == True:
+    if use_s3:
         client.update_function_code(
             FunctionName=cfg.get('function_name'),
             S3Bucket='{}'.format(buck_name),
             S3Key='{}'.format(s3_file),
-            Publish=True
+            Publish=True,
         )
     else:
         client.update_function_code(
             FunctionName=cfg.get('function_name'),
             ZipFile=byte_stream,
-            Publish=True
+            Publish=True,
         )
 
     kwargs = {
@@ -568,6 +570,7 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
         )
 
     client.update_function_configuration(**kwargs)
+
 
 def upload_s3(cfg, path_to_zip_file, *use_s3):
     """Upload a function to AWS S3."""
@@ -604,7 +607,7 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
 
     client.put_object(**kwargs)
     print('Finished uploading {} to S3 bucket {}'.format(func_name, buck_name))
-    if use_s3 == True:
+    if use_s3:
         return filename
 
 
