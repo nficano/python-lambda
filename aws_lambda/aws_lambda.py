@@ -545,6 +545,7 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     kwargs = {
         'FunctionName': cfg.get('function_name'),
         'Role': role,
+        'Runtime': cfg.get('runtime'),
         'Handler': cfg.get('handler'),
         'Description': cfg.get('description'),
         'Timeout': cfg.get('timeout', 15),
