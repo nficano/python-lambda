@@ -167,14 +167,20 @@ This would create environment variables in the lambda instance upon deploy. If y
 
 Uploading to S3
 ===============
-You may find that you do not need the toolkit to fully deploy your Lambda or that your code bundle is too large to upload via the API.  You can use the `upload` command to send the bundle to an S3 bucket of your choosing.
-Before doing this, you will need to set the following variables in `config.yaml`:
-```
-role: basic_s3_upload
-bucket_name: 'example-bucket'
-s3_key_prefix: 'path/to/file/'
-```
-Your role must have `s3:PutObject` permission on the bucket/key that you specify for the upload to work properly. Once you have that set, you can execute `lambda upload` to initiate the transfer.
+You may find that you do not need the toolkit to fully deploy your Lambda or that your code bundle is too large to upload via the API.  You can use the ``upload`` command to send the bundle to an S3 bucket of your choosing.
+Before doing this, you will need to set the following variables in ``config.yaml``:
+
+.. code:: yaml
+
+    role: basic_s3_upload
+    bucket_name: 'example-bucket'
+    s3_key_prefix: 'path/to/file/'
+
+Your role must have ``s3:PutObject`` permission on the bucket/key that you specify for the upload to work properly. Once you have that set, you can execute ``lambda upload`` to initiate the transfer.
+
+Deploying via S3
+===============
+You can also choose to use S3 as your source for Lambda deployments.  This can be done by issuing ``lambda deploy_s3`` with the same variables/AWS permissions you'd set for executing the ``upload`` command.
 
 Development
 ===========
