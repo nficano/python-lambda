@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import pip
+import sys
 from setuptools import find_packages
 from setuptools import setup
 
@@ -10,7 +11,12 @@ with open('README.rst') as readme_file:
 requirements = pip.req.parse_requirements(
     'requirements.txt', session=pip.download.PipSession(),
 )
-pip_requirements = [str(r.req) for r in requirements]
+
+# Only install futures package if using a Python version <= 2.7
+if sys.version_info[0] == 2:
+    pip_requirements = [str(r.req) for r in requirements]
+else:
+    pip_requirements = [str(r.req) for r in requirements if 'futures' not in str(r.req)]
 
 test_requirements = [
     # TODO: put package test requirements here
