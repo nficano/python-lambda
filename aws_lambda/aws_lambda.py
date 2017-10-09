@@ -96,7 +96,8 @@ def deploy(src, config_file='config.yaml', requirements=False, local_package=Non
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, requirements, local_package)
+    path_to_zip_file = build(
+        src, config_file=config_file, requirements=requirements, local_package=local_package)
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -122,7 +123,8 @@ def deploy_s3(src, config_file='config.yaml', requirements=False, local_package=
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, requirements, local_package)
+    path_to_zip_file = build(
+        src, config_file=config_file, requirements=requirements, local_package=local_package)
 
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
@@ -150,7 +152,8 @@ def upload(src, config_file='config.yaml', requirements=False, local_package=Non
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, requirements, local_package)
+    path_to_zip_file = build(
+        src, config_file=config_file, requirements=requirements, local_package=local_package)
 
     upload_s3(cfg, path_to_zip_file)
 

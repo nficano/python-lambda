@@ -44,7 +44,9 @@ def init(folder, minimal):
     help='Install local package as well.', multiple=True,
 )
 def build(use_requirements, local_package):
-    aws_lambda.build(CURRENT_DIR, config_file=config_file, use_requirements, local_package)
+    aws_lambda.build(
+        CURRENT_DIR, config_file=config_file, use_requirements=use_requirements,
+        local_package=local_package)
 
 
 @click.command(help='Run a local test of your function.')
