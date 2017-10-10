@@ -78,7 +78,10 @@ def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
                           .format(version_number, e.message))
 
 
-def deploy(src, config_file='config.yaml', requirements=False, local_package=None):
+def deploy(
+    src, config_file='config.yaml', requirements=False,
+    local_package=None,
+):
     """Deploys a new function to AWS Lambda.
 
     :param str src:
@@ -97,7 +100,10 @@ def deploy(src, config_file='config.yaml', requirements=False, local_package=Non
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
     path_to_zip_file = build(
-        src, config_file=config_file, requirements=requirements, local_package=local_package)
+        src, config_file=config_file,
+        requirements=requirements,
+        local_package=local_package,
+    )
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -105,7 +111,10 @@ def deploy(src, config_file='config.yaml', requirements=False, local_package=Non
         create_function(cfg, path_to_zip_file)
 
 
-def deploy_s3(src, config_file='config.yaml', requirements=False, local_package=None):
+def deploy_s3(
+    src, config_file='config.yaml', requirements=False,
+    local_package=None,
+):
     """Deploys a new function via AWS S3.
 
     :param str src:
@@ -124,7 +133,9 @@ def deploy_s3(src, config_file='config.yaml', requirements=False, local_package=
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
     path_to_zip_file = build(
-        src, config_file=config_file, requirements=requirements, local_package=local_package)
+        src, config_file=config_file, requirements=requirements,
+        local_package=local_package,
+    )
 
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
@@ -134,7 +145,10 @@ def deploy_s3(src, config_file='config.yaml', requirements=False, local_package=
         create_function(cfg, path_to_zip_file, use_s3, s3_file)
 
 
-def upload(src, config_file='config.yaml', requirements=False, local_package=None):
+def upload(
+    src, config_file='config.yaml', requirements=False,
+    local_package=None,
+):
     """Uploads a new function to AWS S3.
 
     :param str src:
@@ -153,12 +167,17 @@ def upload(src, config_file='config.yaml', requirements=False, local_package=Non
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
     path_to_zip_file = build(
-        src, config_file=config_file, requirements=requirements, local_package=local_package)
+        src, config_file=config_file, requirements=requirements,
+        local_package=local_package,
+    )
 
     upload_s3(cfg, path_to_zip_file)
 
 
-def invoke(src, event_file='event.json', config_file='config.yaml', verbose=False):
+def invoke(
+    src, event_file='event.json', config_file='config.yaml',
+    verbose=False,
+):
     """Simulates a call to your function.
 
     :param str src:
@@ -229,7 +248,10 @@ def init(src, minimal=False):
             copy(dest_path, src)
 
 
-def build(src, config_file='config.yaml', requirements=False, local_package=None):
+def build(
+    src, config_file='config.yaml', requirements=False,
+    local_package=None,
+):
     """Builds the file bundle.
 
     :param str src:
