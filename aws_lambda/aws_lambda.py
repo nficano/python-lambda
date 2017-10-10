@@ -79,8 +79,8 @@ def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
 
 
 def deploy(
-    src, config_file='config.yaml', requirements=False,
-    local_package=None,
+        src, requirements=False, local_package=None,
+        config_file='config.yaml',
 ):
     """Deploys a new function to AWS Lambda.
 
@@ -112,8 +112,7 @@ def deploy(
 
 
 def deploy_s3(
-    src, config_file='config.yaml', requirements=False,
-    local_package=None,
+    src, requirements=False, local_package=None, config_file='config.yaml',
 ):
     """Deploys a new function via AWS S3.
 
@@ -146,8 +145,8 @@ def deploy_s3(
 
 
 def upload(
-    src, config_file='config.yaml', requirements=False,
-    local_package=None,
+        src, requirements=False, local_package=None,
+        config_file='config.yaml',
 ):
     """Uploads a new function to AWS S3.
 
@@ -249,8 +248,7 @@ def init(src, minimal=False):
 
 
 def build(
-    src, config_file='config.yaml', requirements=False,
-    local_package=None,
+    src, requirements=False, local_package=None, config_file='config.yaml',
 ):
     """Builds the file bundle.
 
