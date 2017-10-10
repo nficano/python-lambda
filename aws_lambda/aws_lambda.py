@@ -33,7 +33,7 @@ ARN_PREFIXES = {
 log = logging.getLogger(__name__)
 
 
-def cleanup_old_versions(src, keep_last_versions):
+def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
     """Deletes old deployed versions of the function in AWS Lambda.
 
     Won't delete $Latest and any aliased version
@@ -47,7 +47,7 @@ def cleanup_old_versions(src, keep_last_versions):
     if keep_last_versions <= 0:
         print("Won't delete all versions. Please do this manually")
     else:
-        path_to_config_file = os.path.join(src, 'config.yaml')
+        path_to_config_file = os.path.join(src, config_file)
         cfg = read(path_to_config_file, loader=yaml.load)
 
         aws_access_key_id = cfg.get('aws_access_key_id')
@@ -78,7 +78,7 @@ def cleanup_old_versions(src, keep_last_versions):
                           .format(version_number, e.message))
 
 
-def deploy(src, requirements=False, local_package=None):
+def deploy(src, config_file='config.yaml', requirements=False, local_package=None):
     """Deploys a new function to AWS Lambda.
 
     :param str src:
@@ -89,14 +89,15 @@ def deploy(src, requirements=False, local_package=None):
         well (and/or is not available on PyPi)
     """
     # Load and parse the config file.
-    path_to_config_file = os.path.join(src, 'config.yaml')
+    path_to_config_file = os.path.join(src, config_file)
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, requirements, local_package)
+    path_to_zip_file = build(
+        src, config_file=config_file, requirements=requirements, local_package=local_package)
 
     if function_exists(cfg, cfg.get('function_name')):
         update_function(cfg, path_to_zip_file)
@@ -104,7 +105,7 @@ def deploy(src, requirements=False, local_package=None):
         create_function(cfg, path_to_zip_file)
 
 
-def deploy_s3(src, requirements=False, local_package=None):
+def deploy_s3(src, config_file='config.yaml', requirements=False, local_package=None):
     """Deploys a new function via AWS S3.
 
     :param str src:
@@ -115,14 +116,15 @@ def deploy_s3(src, requirements=False, local_package=None):
         well (and/or is not available on PyPi)
     """
     # Load and parse the config file.
-    path_to_config_file = os.path.join(src, 'config.yaml')
+    path_to_config_file = os.path.join(src, config_file)
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, requirements, local_package)
+    path_to_zip_file = build(
+        src, config_file=config_file, requirements=requirements, local_package=local_package)
 
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
@@ -132,7 +134,7 @@ def deploy_s3(src, requirements=False, local_package=None):
         create_function(cfg, path_to_zip_file, use_s3, s3_file)
 
 
-def upload(src, requirements=False, local_package=None):
+def upload(src, config_file='config.yaml', requirements=False, local_package=None):
     """Uploads a new function to AWS S3.
 
     :param str src:
@@ -143,19 +145,20 @@ def upload(src, requirements=False, local_package=None):
         well (and/or is not available on PyPi)
     """
     # Load and parse the config file.
-    path_to_config_file = os.path.join(src, 'config.yaml')
+    path_to_config_file = os.path.join(src, config_file)
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
-    path_to_zip_file = build(src, requirements, local_package)
+    path_to_zip_file = build(
+        src, config_file=config_file, requirements=requirements, local_package=local_package)
 
     upload_s3(cfg, path_to_zip_file)
 
 
-def invoke(src, alt_event=None, verbose=False):
+def invoke(src, event_file='event.json', config_file='config.yaml', verbose=False):
     """Simulates a call to your function.
 
     :param str src:
@@ -167,7 +170,7 @@ def invoke(src, alt_event=None, verbose=False):
         Whether to print out verbose details.
     """
     # Load and parse the config file.
-    path_to_config_file = os.path.join(src, 'config.yaml')
+    path_to_config_file = os.path.join(src, config_file)
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Load environment variables from the config file into the actual
@@ -178,10 +181,7 @@ def invoke(src, alt_event=None, verbose=False):
             os.environ[key] = value
 
     # Load and parse event file.
-    if alt_event:
-        path_to_event_file = os.path.join(src, alt_event)
-    else:
-        path_to_event_file = os.path.join(src, 'event.json')
+    path_to_event_file = os.path.join(src, event_file)
     event = read(path_to_event_file, loader=json.loads)
 
     # Tweak to allow module to import local modules
@@ -229,7 +229,7 @@ def init(src, minimal=False):
             copy(dest_path, src)
 
 
-def build(src, requirements=False, local_package=None):
+def build(src, config_file='config.yaml', requirements=False, local_package=None):
     """Builds the file bundle.
 
     :param str src:
@@ -240,7 +240,7 @@ def build(src, requirements=False, local_package=None):
         well (and/or is not available on PyPi)
     """
     # Load and parse the config file.
-    path_to_config_file = os.path.join(src, 'config.yaml')
+    path_to_config_file = os.path.join(src, config_file)
     cfg = read(path_to_config_file, loader=yaml.load)
 
     # Get the absolute path to the output directory and create it if it doesn't
@@ -296,7 +296,7 @@ def build(src, requirements=False, local_package=None):
         if os.path.isfile(filename):
             if filename == '.DS_Store':
                 continue
-            if filename == 'config.yaml':
+            if filename == config_file:
                 continue
             print('Bundling: %r' % filename)
             files.append(os.path.join(src, filename))
