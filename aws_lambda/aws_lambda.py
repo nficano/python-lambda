@@ -439,9 +439,12 @@ def get_role_name(region, account_id, role):
     return 'arn:{0}:iam::{1}:role/{2}'.format(prefix, account_id, role)
 
 
-def get_account_id(aws_access_key_id, aws_secret_access_key):
+def get_account_id(aws_access_key_id, aws_secret_access_key,region=None):
     """Query STS for a users' account_id"""
-    client = get_client('sts', aws_access_key_id, aws_secret_access_key)
+    client = get_client(
+        'sts', aws_access_key_id, aws_secret_access_key,
+        region
+    )
     return client.get_caller_identity().get('Account')
 
 
@@ -464,7 +467,7 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
+    account_id = get_account_id(aws_access_key_id, aws_secret_access_key,cfg.get('region'))
     role = get_role_name(
         cfg.get('region'), account_id,
         cfg.get('role', 'lambda_basic_execution'),
@@ -534,7 +537,7 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
-    account_id = get_account_id(aws_access_key_id, aws_secret_access_key)
+    account_id = get_account_id(aws_access_key_id, aws_secret_access_key, cfg.get('region'))
     role = get_role_name(
         cfg.get('region'), account_id,
         cfg.get('role', 'lambda_basic_execution'),
