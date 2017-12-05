@@ -79,7 +79,7 @@ def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
 
 
 def deploy(
-        src, requirements=False, local_package=None,
+        src, use_requirements=False, local_package=None,
         config_file='config.yaml',
 ):
     """Deploys a new function to AWS Lambda.
@@ -101,7 +101,7 @@ def deploy(
     # directory.
     path_to_zip_file = build(
         src, config_file=config_file,
-        requirements=requirements,
+        use_requirements=use_requirements,
         local_package=local_package,
     )
 
@@ -132,7 +132,7 @@ def deploy_s3(
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
     path_to_zip_file = build(
-        src, config_file=config_file, requirements=requirements,
+        src, config_file=config_file, use_requirements=requirements,
         local_package=local_package,
     )
 
@@ -145,7 +145,7 @@ def deploy_s3(
 
 
 def upload(
-        src, requirements=False, local_package=None,
+        src, use_requirements=False, local_package=None,
         config_file='config.yaml',
 ):
     """Uploads a new function to AWS S3.
@@ -166,7 +166,7 @@ def upload(
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
     path_to_zip_file = build(
-        src, config_file=config_file, requirements=requirements,
+        src, config_file=config_file, use_requirements=use_requirements,
         local_package=local_package,
     )
 
@@ -248,7 +248,7 @@ def init(src, minimal=False):
 
 
 def build(
-    src, requirements=False, local_package=None, config_file='config.yaml',
+    src, use_requirements=False, local_package=None, config_file='config.yaml',
 ):
     """Builds the file bundle.
 
@@ -277,7 +277,7 @@ def build(
     path_to_temp = mkdtemp(prefix='aws-lambda')
     pip_install_to_target(
         path_to_temp,
-        requirements=requirements,
+        use_requirements=use_requirements,
         local_package=local_package,
     )
 
@@ -396,13 +396,13 @@ def _install_packages(path, packages):
         pip.main(['install', package, '-t', path, '--ignore-installed'])
 
 
-def pip_install_to_target(path, requirements=False, local_package=None):
+def pip_install_to_target(path, use_requirements=False, local_package=None):
     """For a given active virtualenv, gather all installed pip packages then
     copy (re-install) them to the path provided.
 
     :param str path:
         Path to copy installed pip packages to.
-    :param bool requirements:
+    :param bool use_requirements:
         If set, only the packages in the requirements.txt file are installed.
         The requirements.txt file needs to be in the same directory as the
         project which shall be deployed.
@@ -413,7 +413,7 @@ def pip_install_to_target(path, requirements=False, local_package=None):
         well (and/or is not available on PyPi)
     """
     packages = []
-    if not requirements:
+    if not use_requirements:
         print('Gathering pip packages')
         packages.extend(pip.operations.freeze.freeze())
     else:
