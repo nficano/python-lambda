@@ -36,7 +36,7 @@ def init(folder, minimal):
 
 
 @click.command(help='Bundles package for deployment.')
-@click.option('--config-file', default=None, help='Alternate config file.')
+@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
     '--use-requirements', default=False, is_flag=True,
     help='Install all packages defined in requirements.txt',
@@ -55,8 +55,8 @@ def build(use_requirements, local_package, config_file):
 
 
 @click.command(help='Run a local test of your function.')
-@click.option('--event-file', default=None, help='Alternate event file.')
-@click.option('--config-file', default=None, help='Alternate config file.')
+@click.option('--event-file', default='event.json', help='Alternate event file.')
+@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option('--verbose', '-v', is_flag=True)
 def invoke(event_file, config_file, verbose):
     aws_lambda.invoke(
@@ -68,7 +68,7 @@ def invoke(event_file, config_file, verbose):
 
 
 @click.command(help='Register and deploy your code to lambda.')
-@click.option('--config-file', default=None, help='Alternate config file.')
+@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
     '--use-requirements', default=False, is_flag=True,
     help='Install all packages defined in requirements.txt',
@@ -100,7 +100,7 @@ def upload(use_requirements, local_package):
 
 
 @click.command(help='Deploy your lambda via S3.')
-@click.option('--config-file', default=None, help='Alternate config file.')
+@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
     '--use-requirements', default=False, is_flag=True, help=(
         'Install all packages defined in requirements.txt'
@@ -119,7 +119,7 @@ def deploy_s3(use_requirements, local_package, config_file):
 
 
 @click.command(help='Delete old versions of your functions')
-@click.option('--config-file', default=None, help='Alternate config file.')
+@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
     '--keep-last', type=int, prompt=(
         'Please enter the number of recent versions to keep'
