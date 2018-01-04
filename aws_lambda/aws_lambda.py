@@ -196,7 +196,7 @@ def invoke(
     env_vars = cfg.get('environment_variables')
     if env_vars:
         for key, value in env_vars.items():
-            os.environ[key] = value
+            os.environ[key] = get_environment_variable_value(value)
 
     # Load and parse event file.
     path_to_event_file = os.path.join(src, event_file)
