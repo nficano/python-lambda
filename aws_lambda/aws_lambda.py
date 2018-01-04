@@ -585,7 +585,7 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
         kwargs.update(
             Environment={
                 'Variables': {
-                    key: get_environment_variable_value(value)
+                    key: str(get_environment_variable_value(value))
                     for key, value
                     in cfg.get('environment_variables').items()
                 },
