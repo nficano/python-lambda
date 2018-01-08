@@ -19,7 +19,9 @@ def cli():
 
 @click.command(help='Create a new function for Lambda.')
 @click.option(
-    '--minimal', default=False, is_flag=True,
+    '--minimal',
+    default=False,
+    is_flag=True,
     help='Exclude any unnecessary template files',
 )
 @click.argument(
@@ -36,14 +38,23 @@ def init(folder, minimal):
 
 
 @click.command(help='Bundles package for deployment.')
-@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
-    '--use-requirements', default=False, is_flag=True,
+    '--config-file',
+    default='config.yaml',
+    help='Alternate config file.',
+)
+@click.option(
+    '--use-requirements',
+    default=False,
+    is_flag=True,
     help='Install all packages defined in requirements.txt',
 )
 @click.option(
-    '--local-package', default=None, type=click.Path(),
-    help='Install local package as well.', multiple=True,
+    '--local-package',
+    default=None,
+    type=click.Path(),
+    help='Install local package as well.',
+    multiple=True,
 )
 def build(use_requirements, local_package, config_file):
     aws_lambda.build(
@@ -55,8 +66,16 @@ def build(use_requirements, local_package, config_file):
 
 
 @click.command(help='Run a local test of your function.')
-@click.option('--event-file', default='event.json', help='Alternate event file.')
-@click.option('--config-file', default='config.yaml', help='Alternate config file.')
+@click.option(
+    '--event-file',
+    default='event.json',
+    help='Alternate event file.',
+)
+@click.option(
+    '--config-file',
+    default='config.yaml',
+    help='Alternate config file.',
+)
 @click.option('--verbose', '-v', is_flag=True)
 def invoke(event_file, config_file, verbose):
     aws_lambda.invoke(
@@ -68,14 +87,23 @@ def invoke(event_file, config_file, verbose):
 
 
 @click.command(help='Register and deploy your code to lambda.')
-@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
-    '--use-requirements', default=False, is_flag=True,
+    '--config-file',
+    default='config.yaml',
+    help='Alternate config file.',
+)
+@click.option(
+    '--use-requirements',
+    default=False,
+    is_flag=True,
     help='Install all packages defined in requirements.txt',
 )
 @click.option(
-    '--local-package', default=None, type=click.Path(),
-    help='Install local package as well.', multiple=True,
+    '--local-package',
+    default=None,
+    type=click.Path(),
+    help='Install local package as well.',
+    multiple=True,
 )
 def deploy(use_requirements, local_package, config_file):
     aws_lambda.deploy(
@@ -88,27 +116,40 @@ def deploy(use_requirements, local_package, config_file):
 
 @click.command(help='Upload your lambda to S3.')
 @click.option(
-    '--use-requirements', default=False, is_flag=True,
+    '--use-requirements',
+    default=False,
+    is_flag=True,
     help='Install all packages defined in requirements.txt',
 )
 @click.option(
-    '--local-package', default=None, type=click.Path(),
-    help='Install local package as well.', multiple=True,
+    '--local-package',
+    default=None,
+    type=click.Path(),
+    help='Install local package as well.',
+    multiple=True,
 )
 def upload(use_requirements, local_package):
     aws_lambda.upload(CURRENT_DIR, use_requirements, local_package)
 
 
 @click.command(help='Deploy your lambda via S3.')
-@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
-    '--use-requirements', default=False, is_flag=True, help=(
-        'Install all packages defined in requirements.txt'
-    ),
+    '--config-file',
+    default='config.yaml',
+    help='Alternate config file.',
 )
 @click.option(
-    '--local-package', default=None, type=click.Path(),
-    multiple=True, help='Install local package as well.',
+    '--use-requirements',
+    default=False,
+    is_flag=True,
+    help='Install all packages defined in requirements.txt',
+)
+@click.option(
+    '--local-package',
+    default=None,
+    type=click.Path(),
+    multiple=True,
+    help='Install local package as well.',
 )
 def deploy_s3(use_requirements, local_package, config_file):
     aws_lambda.deploy_s3(
@@ -119,11 +160,15 @@ def deploy_s3(use_requirements, local_package, config_file):
 
 
 @click.command(help='Delete old versions of your functions')
-@click.option('--config-file', default='config.yaml', help='Alternate config file.')
 @click.option(
-    '--keep-last', type=int, prompt=(
-        'Please enter the number of recent versions to keep'
-    ),
+    '--config-file',
+    default='config.yaml',
+    help='Alternate config file.',
+)
+@click.option(
+    '--keep-last',
+    type=int,
+    prompt='Please enter the number of recent versions to keep',
 )
 def cleanup(keep_last, config_file):
     aws_lambda.cleanup_old_versions(

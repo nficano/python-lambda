@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import pip
 import sys
+
+import pip
 from setuptools import find_packages
 from setuptools import setup
 
@@ -16,7 +17,8 @@ requirements = pip.req.parse_requirements(
 if sys.version_info[0] == 2:
     pip_requirements = [str(r.req) for r in requirements]
 else:
-    pip_requirements = [str(r.req) for r in requirements if 'futures' not in str(r.req)]
+    pip_requirements = [str(r.req)
+                        for r in requirements if 'futures' not in str(r.req)]
 
 test_requirements = [
     # TODO: put package test requirements here
