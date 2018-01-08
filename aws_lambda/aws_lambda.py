@@ -112,7 +112,7 @@ def deploy(
 
 
 def deploy_s3(
-    src, requirements=False, local_package=None, config_file='config.yaml',
+    src, use_requirements=False, local_package=None, config_file='config.yaml',
 ):
     """Deploys a new function via AWS S3.
 
@@ -132,7 +132,7 @@ def deploy_s3(
     # Zip the contents of this folder into a single file and output to the dist
     # directory.
     path_to_zip_file = build(
-        src, config_file=config_file, use_requirements=requirements,
+        src, config_file=config_file, use_requirements=use_requirements,
         local_package=local_package,
     )
 
