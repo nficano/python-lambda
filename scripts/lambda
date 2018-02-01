@@ -44,6 +44,10 @@ def init(folder, minimal):
     help='Alternate config file.',
 )
 @click.option(
+    '--profile',
+    help='AWS profile to use.',
+)
+@click.option(
     '--use-requirements',
     default=False,
     is_flag=True,
@@ -56,12 +60,13 @@ def init(folder, minimal):
     help='Install local package as well.',
     multiple=True,
 )
-def build(use_requirements, local_package, config_file):
+def build(use_requirements, local_package, config_file, profile):
     aws_lambda.build(
         CURRENT_DIR,
         use_requirements=use_requirements,
         local_package=local_package,
         config_file=config_file,
+        profile_name=profile,
     )
 
 
@@ -76,12 +81,17 @@ def build(use_requirements, local_package, config_file):
     default='config.yaml',
     help='Alternate config file.',
 )
+@click.option(
+    '--profile',
+    help='AWS profile to use.',
+)
 @click.option('--verbose', '-v', is_flag=True)
-def invoke(event_file, config_file, verbose):
+def invoke(event_file, config_file, profile, verbose):
     aws_lambda.invoke(
         CURRENT_DIR,
         event_file=event_file,
         config_file=config_file,
+        profile_name=profile,
         verbose=verbose,
     )
 
@@ -93,6 +103,10 @@ def invoke(event_file, config_file, verbose):
     help='Alternate config file.',
 )
 @click.option(
+    '--profile',
+    help='AWS profile to use.',
+)
+@click.option(
     '--use-requirements',
     default=False,
     is_flag=True,
@@ -105,17 +119,27 @@ def invoke(event_file, config_file, verbose):
     help='Install local package as well.',
     multiple=True,
 )
-def deploy(use_requirements, local_package, config_file):
+def deploy(use_requirements, local_package, config_file, profile):
     aws_lambda.deploy(
         CURRENT_DIR,
-        config_file=config_file,
         use_requirements=use_requirements,
         local_package=local_package,
+        config_file=config_file,
+        profile_name=profile,
     )
 
 
 @click.command(help='Upload your lambda to S3.')
 @click.option(
+    '--config-file',
+    default='config.yaml',
+    help='Alternate config file.',
+)
+@click.option(
+    '--profile',
+    help='AWS profile to use.',
+)
+@click.option(
     '--use-requirements',
     default=False,
     is_flag=True,
@@ -128,8 +152,14 @@ def deploy(use_requirements, local_package, config_file):
     help='Install local package as well.',
     multiple=True,
 )
-def upload(use_requirements, local_package):
-    aws_lambda.upload(CURRENT_DIR, use_requirements, local_package)
+def upload(use_requirements, local_package, config_file, profile):
+    aws_lambda.upload(
+        CURRENT_DIR,
+        use_requirements=use_requirements,
+        local_package=local_package,
+        config_file=config_file,
+        profile_name=profile,
+    )
 
 
 @click.command(help='Deploy your lambda via S3.')
@@ -139,6 +169,10 @@ def upload(use_requirements, local_package):
     help='Alternate config file.',
 )
 @click.option(
+    '--profile',
+    help='AWS profile to use.',
+)
+@click.option(
     '--use-requirements',
     default=False,
     is_flag=True,
@@ -151,11 +185,13 @@ def upload(use_requirements, local_package):
     multiple=True,
     help='Install local package as well.',
 )
-def deploy_s3(use_requirements, local_package, config_file):
+def deploy_s3(use_requirements, local_package, config_file, profile):
     aws_lambda.deploy_s3(
-        CURRENT_DIR, config_file=config_file,
+        CURRENT_DIR,
         use_requirements=use_requirements,
         local_package=local_package,
+        config_file=config_file,
+        profile_name=profile,
     )
 
 
@@ -166,13 +202,20 @@ def deploy_s3(use_requirements, local_package, config_file):
     help='Alternate config file.',
 )
 @click.option(
+    '--profile',
+    help='AWS profile to use.',
+)
+@click.option(
     '--keep-last',
     type=int,
     prompt='Please enter the number of recent versions to keep',
 )
-def cleanup(keep_last, config_file):
+def cleanup(keep_last, config_file, profile):
     aws_lambda.cleanup_old_versions(
-        CURRENT_DIR, keep_last, config_file=config_file,
+        CURRENT_DIR,
+        keep_last,
+        config_file=config_file,
+        profile_name=profile,
     )
 
 
