@@ -139,9 +139,9 @@ def deploy_s3(
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
     if function_exists(cfg, cfg.get('function_name')):
-        update_function(cfg, path_to_zip_file, use_s3, s3_file)
+        update_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
     else:
-        create_function(cfg, path_to_zip_file, use_s3, s3_file)
+        create_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
 
 
 def upload(
@@ -459,7 +459,7 @@ def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
     )
 
 
-def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
+def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     """Register and upload a function to AWS Lambda."""
 
     print('Creating your new Lambda function')
@@ -531,7 +531,7 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     client.create_function(**kwargs)
 
 
-def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
+def update_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     """Updates the code of an existing Lambda function"""
 
     print('Updating your Lambda function')
