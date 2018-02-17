@@ -33,7 +33,10 @@ ARN_PREFIXES = {
 log = logging.getLogger(__name__)
 
 
-def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
+def cleanup_old_versions(
+    src, keep_last_versions,
+    config_file='config.yaml', profile_name=None,
+):
     """Deletes old deployed versions of the function in AWS Lambda.
 
     Won't delete $Latest and any aliased version
@@ -48,13 +51,14 @@ def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
         print("Won't delete all versions. Please do this manually")
     else:
         path_to_config_file = os.path.join(src, config_file)
-        cfg = read(path_to_config_file, loader=yaml.load)
+        cfg = read_cfg(path_to_config_file, profile_name)
 
+        profile_name = cfg.get('profile')
         aws_access_key_id = cfg.get('aws_access_key_id')
         aws_secret_access_key = cfg.get('aws_secret_access_key')
 
         client = get_client(
-            'lambda', aws_access_key_id, aws_secret_access_key,
+            'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
             cfg.get('region'),
         )
 
@@ -80,7 +84,7 @@ def cleanup_old_versions(src, keep_last_versions, config_file='config.yaml'):
 
 def deploy(
         src, use_requirements=False, local_package=None,
-        config_file='config.yaml',
+        config_file='config.yaml', profile_name=None,
 ):
     """Deploys a new function to AWS Lambda.
 
@@ -93,7 +97,7 @@ def deploy(
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, config_file)
-    cfg = read(path_to_config_file, loader=yaml.load)
+    cfg = read_cfg(path_to_config_file, profile_name)
 
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
@@ -112,7 +116,8 @@ def deploy(
 
 
 def deploy_s3(
-    src, use_requirements=False, local_package=None, config_file='config.yaml',
+    src, use_requirements=False, local_package=None,
+    config_file='config.yaml', profile_name=None,
 ):
     """Deploys a new function via AWS S3.
 
@@ -125,7 +130,7 @@ def deploy_s3(
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, config_file)
-    cfg = read(path_to_config_file, loader=yaml.load)
+    cfg = read_cfg(path_to_config_file, profile_name)
 
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
@@ -139,14 +144,14 @@ def deploy_s3(
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
     if function_exists(cfg, cfg.get('function_name')):
-        update_function(cfg, path_to_zip_file, use_s3, s3_file)
+        update_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
     else:
-        create_function(cfg, path_to_zip_file, use_s3, s3_file)
+        create_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
 
 
 def upload(
         src, use_requirements=False, local_package=None,
-        config_file='config.yaml',
+        config_file='config.yaml', profile_name=None,
 ):
     """Uploads a new function to AWS S3.
 
@@ -159,7 +164,7 @@ def upload(
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, config_file)
-    cfg = read(path_to_config_file, loader=yaml.load)
+    cfg = read_cfg(path_to_config_file, profile_name)
 
     # Copy all the pip dependencies required to run your code into a temporary
     # folder then add the handler file in the root of this directory.
@@ -174,7 +179,8 @@ def upload(
 
 
 def invoke(
-    src, event_file='event.json', config_file='config.yaml',
+    src, event_file='event.json',
+    config_file='config.yaml', profile_name=None,
     verbose=False,
 ):
     """Simulates a call to your function.
@@ -189,7 +195,11 @@ def invoke(
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, config_file)
-    cfg = read(path_to_config_file, loader=yaml.load)
+    cfg = read_cfg(path_to_config_file, profile_name)
+
+    # Set AWS_PROFILE environment variable based on `--profile` option.
+    if profile_name:
+        os.environ['AWS_PROFILE'] = profile_name
 
     # Load environment variables from the config file into the actual
     # environment.
@@ -248,7 +258,8 @@ def init(src, minimal=False):
 
 
 def build(
-    src, use_requirements=False, local_package=None, config_file='config.yaml',
+    src, use_requirements=False, local_package=None,
+    config_file='config.yaml', profile_name=None,
 ):
     """Builds the file bundle.
 
@@ -261,7 +272,7 @@ def build(
     """
     # Load and parse the config file.
     path_to_config_file = os.path.join(src, config_file)
-    cfg = read(path_to_config_file, loader=yaml.load)
+    cfg = read_cfg(path_to_config_file, profile_name)
 
     # Get the absolute path to the output directory and create it if it doesn't
     # already exist.
@@ -439,36 +450,38 @@ def get_role_name(region, account_id, role):
     return 'arn:{0}:iam::{1}:role/{2}'.format(prefix, account_id, role)
 
 
-def get_account_id(aws_access_key_id, aws_secret_access_key, region=None):
+def get_account_id(profile_name, aws_access_key_id, aws_secret_access_key, region=None):
     """Query STS for a users' account_id"""
     client = get_client(
-        'sts', aws_access_key_id, aws_secret_access_key,
+        'sts', profile_name, aws_access_key_id, aws_secret_access_key,
         region,
     )
     return client.get_caller_identity().get('Account')
 
 
-def get_client(client, aws_access_key_id, aws_secret_access_key, region=None):
+def get_client(client, profile_name, aws_access_key_id, aws_secret_access_key, region=None):
     """Shortcut for getting an initialized instance of the boto3 client."""
 
-    return boto3.client(
-        client,
+    boto3.setup_default_session(
+        profile_name=profile_name,
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=aws_secret_access_key,
         region_name=region,
     )
+    return boto3.client(client)
 
 
-def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
+def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     """Register and upload a function to AWS Lambda."""
 
     print('Creating your new Lambda function')
     byte_stream = read(path_to_zip_file, binary_file=True)
+    profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(
-        aws_access_key_id, aws_secret_access_key, cfg.get('region'),
+        profile_name, aws_access_key_id, aws_secret_access_key, cfg.get('region'),
     )
     role = get_role_name(
         cfg.get('region'), account_id,
@@ -476,7 +489,7 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     )
 
     client = get_client(
-        'lambda', aws_access_key_id, aws_secret_access_key,
+        'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
         cfg.get('region'),
     )
 
@@ -531,16 +544,17 @@ def create_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     client.create_function(**kwargs)
 
 
-def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
+def update_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     """Updates the code of an existing Lambda function"""
 
     print('Updating your Lambda function')
     byte_stream = read(path_to_zip_file, binary_file=True)
+    profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(
-        aws_access_key_id, aws_secret_access_key, cfg.get('region'),
+        profile_name, aws_access_key_id, aws_secret_access_key, cfg.get('region'),
     )
     role = get_role_name(
         cfg.get('region'), account_id,
@@ -548,7 +562,7 @@ def update_function(cfg, path_to_zip_file, *use_s3, **s3_file):
     )
 
     client = get_client(
-        'lambda', aws_access_key_id, aws_secret_access_key,
+        'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
         cfg.get('region'),
     )
 
@@ -603,10 +617,11 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
     """Upload a function to AWS S3."""
 
     print('Uploading your new Lambda function')
+    profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
     client = get_client(
-        's3', aws_access_key_id, aws_secret_access_key,
+        's3', profile_name, aws_access_key_id, aws_secret_access_key,
         cfg.get('region'),
     )
     byte_stream = b''
@@ -641,10 +656,11 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
 def function_exists(cfg, function_name):
     """Check whether a function exists or not"""
 
+    profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
     client = get_client(
-        'lambda', aws_access_key_id, aws_secret_access_key,
+        'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
         cfg.get('region'),
     )
 
@@ -663,3 +679,12 @@ def function_exists(cfg, function_name):
             f['FunctionName'] for f in functions_resp.get('Functions', [])
         ])
     return function_name in functions
+
+
+def read_cfg(path_to_config_file, profile_name):
+    cfg = read(path_to_config_file, loader=yaml.load)
+    if profile_name is not None:
+        cfg['profile'] = profile_name
+    elif 'AWS_PROFILE' in os.environ:
+        cfg['profile'] = os.environ['AWS_PROFILE']
+    return cfg
