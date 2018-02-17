@@ -450,7 +450,10 @@ def get_role_name(region, account_id, role):
     return 'arn:{0}:iam::{1}:role/{2}'.format(prefix, account_id, role)
 
 
-def get_account_id(profile_name, aws_access_key_id, aws_secret_access_key, region=None):
+def get_account_id(
+    profile_name, aws_access_key_id, aws_secret_access_key,
+    region=None,
+):
     """Query STS for a users' account_id"""
     client = get_client(
         'sts', profile_name, aws_access_key_id, aws_secret_access_key,
@@ -459,7 +462,10 @@ def get_account_id(profile_name, aws_access_key_id, aws_secret_access_key, regio
     return client.get_caller_identity().get('Account')
 
 
-def get_client(client, profile_name, aws_access_key_id, aws_secret_access_key, region=None):
+def get_client(
+    client, profile_name, aws_access_key_id, aws_secret_access_key,
+    region=None,
+):
     """Shortcut for getting an initialized instance of the boto3 client."""
 
     boto3.setup_default_session(
@@ -481,7 +487,9 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(
-        profile_name, aws_access_key_id, aws_secret_access_key, cfg.get('region'),
+        profile_name, aws_access_key_id, aws_secret_access_key, cfg.get(
+            'region',
+        ),
     )
     role = get_role_name(
         cfg.get('region'), account_id,
@@ -554,7 +562,9 @@ def update_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     aws_secret_access_key = cfg.get('aws_secret_access_key')
 
     account_id = get_account_id(
-        profile_name, aws_access_key_id, aws_secret_access_key, cfg.get('region'),
+        profile_name, aws_access_key_id, aws_secret_access_key, cfg.get(
+            'region',
+        ),
     )
     role = get_role_name(
         cfg.get('region'), account_id,
