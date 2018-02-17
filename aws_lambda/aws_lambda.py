@@ -109,7 +109,7 @@ def deploy(
         local_package=local_package,
     )
 
-    if function_exists(cfg, cfg.get('function_name')):
+    if function_exists(cfg):
         update_function(cfg, path_to_zip_file)
     else:
         create_function(cfg, path_to_zip_file)
@@ -143,7 +143,7 @@ def deploy_s3(
 
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
-    if function_exists(cfg, cfg.get('function_name')):
+    if function_exists(cfg):
         update_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
     else:
         create_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
@@ -663,9 +663,10 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
         return filename
 
 
-def function_exists(cfg, function_name):
+def function_exists(cfg):
     """Check whether a function exists or not"""
 
+    function_name = cfg.get('function_name')
     profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
@@ -674,22 +675,11 @@ def function_exists(cfg, function_name):
         cfg.get('region'),
     )
 
-    # Need to loop through until we get all of the lambda functions returned.
-    # It appears to be only returning 50 functions at a time.
-    functions = []
-    functions_resp = client.list_functions()
-    functions.extend([
-        f['FunctionName'] for f in functions_resp.get('Functions', [])
-    ])
-    while('NextMarker' in functions_resp):
-        functions_resp = client.list_functions(
-            Marker=functions_resp.get('NextMarker'),
-        )
-        functions.extend([
-            f['FunctionName'] for f in functions_resp.get('Functions', [])
-        ])
-    return function_name in functions
-
+    try:
+        return client.get_function(FunctionName=function_name)
+    except client.exceptions.ResourceNotFoundException as e:
+        if 'Function not found' in str(e):
+            return False
 
 def read_cfg(path_to_config_file, profile_name):
     cfg = read(path_to_config_file, loader=yaml.load)
