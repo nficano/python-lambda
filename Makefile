@@ -31,3 +31,7 @@ release: clean
 
 install: clean
 	python setup.py install
+
+test:
+	 py.test tests/ --cov aws_lambda --cov-report term-missing
+
