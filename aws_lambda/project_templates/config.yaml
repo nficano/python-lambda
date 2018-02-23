@@ -26,6 +26,13 @@ environment_variables:
     env_1: foo
     env_2: baz
 
+# If `tags` is uncommented then tags will be set at creation or update
+# time.  During an update all other tags will be removed except the tags
+# listed here.
+#tags:
+#    tag_1: foo
+#    tag_2: bar
+
 # Build options
 build:
   source_directories: lib # a comma delimited list of directories in your project root that contains source to package.
