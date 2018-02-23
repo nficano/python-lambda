@@ -642,7 +642,7 @@ def update_function(
         }
         if tags != existing_cfg['Tags']:
             client.untag_resource(Resource=ret['FunctionArn'],
-                                  TagKeys=existing_cfg['Tags'].keys())
+                                  TagKeys=list(existing_cfg['Tags'].keys()))
             client.tag_resource(Resource=ret['FunctionArn'], Tags=tags)
 
 
