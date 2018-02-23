@@ -447,7 +447,7 @@ def pip_install_to_target(path, use_requirements=False, local_package=None):
 def get_role_name(region, account_id, role):
     """Shortcut to insert the `account_id` and `role` into the iam string."""
     prefix = ARN_PREFIXES.get(region, 'aws')
-    return 'arn:{0}:iam::{1}:role/{2}'.format(prefix, account_id, role)
+    return None if role == "noRoleSet" else 'arn:{0}:iam::{1}:role/{2}'.format(prefix, account_id, role)
 
 
 def get_account_id(
@@ -493,7 +493,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     )
     role = get_role_name(
         cfg.get('region'), account_id,
-        cfg.get('role', 'lambda_basic_execution'),
+        cfg.get('role', 'noRoleSet'),
     )
 
     client = get_client(
@@ -538,6 +538,9 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             'Publish': True,
         }
 
+    if not role:
+        kwargs.pop('Role')
+        
     if 'environment_variables' in cfg:
         kwargs.update(
             Environment={
@@ -608,6 +611,9 @@ def update_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             'SecurityGroupIds': cfg.get('security_group_ids', []),
         },
     }
+    
+    if not role:
+        kwargs.pop('Role')
 
     if 'environment_variables' in cfg:
         kwargs.update(
