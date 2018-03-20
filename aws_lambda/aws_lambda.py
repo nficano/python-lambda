@@ -109,8 +109,9 @@ def deploy(
         local_package=local_package,
     )
 
-    if function_exists(cfg):
-        update_function(cfg, path_to_zip_file)
+    existing_config = get_function_config(cfg)
+    if existing_config:
+        update_function(cfg, path_to_zip_file, existing_config)
     else:
         create_function(cfg, path_to_zip_file)
 
@@ -143,8 +144,10 @@ def deploy_s3(
 
     use_s3 = True
     s3_file = upload_s3(cfg, path_to_zip_file, use_s3)
-    if function_exists(cfg):
-        update_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
+    existing_config = get_function_config(cfg)
+    if existing_config:
+        update_function(cfg, path_to_zip_file, existing_config, use_s3=use_s3,
+                        s3_file=s3_file)
     else:
         create_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
 
@@ -538,6 +541,14 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             'Publish': True,
         }
 
+    if 'tags' in cfg:
+        kwargs.update(
+            Tags={
+                key: str(value)
+                for key, value in cfg.get('tags').items()
+            }
+        )
+
     if 'environment_variables' in cfg:
         kwargs.update(
             Environment={
@@ -552,7 +563,9 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
     client.create_function(**kwargs)
 
 
-def update_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
+def update_function(
+        cfg, path_to_zip_file, existing_cfg, use_s3=False, s3_file=None
+):
     """Updates the code of an existing Lambda function"""
 
     print('Updating your Lambda function')
@@ -620,7 +633,18 @@ def update_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             },
         )
 
-    client.update_function_configuration(**kwargs)
+    ret = client.update_function_configuration(**kwargs)
+
+    if 'tags' in cfg:
+        tags = {
+            key: str(value)
+            for key, value in cfg.get('tags').items()
+        }
+        if tags != existing_cfg.get('Tags'):
+            if existing_cfg.get('Tags'):
+                client.untag_resource(Resource=ret['FunctionArn'],
+                                      TagKeys=list(existing_cfg['Tags'].keys()))
+            client.tag_resource(Resource=ret['FunctionArn'], Tags=tags)
 
 
 def upload_s3(cfg, path_to_zip_file, *use_s3):
@@ -663,8 +687,8 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
         return filename
 
 
-def function_exists(cfg):
-    """Check whether a function exists or not"""
+def get_function_config(cfg):
+    """Check whether a function exists or not and return its config"""
 
     function_name = cfg.get('function_name')
     profile_name = cfg.get('profile')
@@ -680,6 +704,7 @@ def function_exists(cfg):
     except client.exceptions.ResourceNotFoundException as e:
         if 'Function not found' in str(e):
             return False
+
 
 def read_cfg(path_to_config_file, profile_name):
     cfg = read(path_to_config_file, loader=yaml.load)
