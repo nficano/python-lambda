@@ -48,10 +48,10 @@ def init(folder, minimal):
     help='AWS profile to use.',
 )
 @click.option(
-    '--use-requirements',
-    default=False,
-    is_flag=True,
-    help='Install all packages defined in requirements.txt',
+    '--requirements',
+    default=None,
+    type=click.Path(),
+    help='Install packages from supplied requirements file.',
 )
 @click.option(
     '--local-package',
@@ -60,10 +60,10 @@ def init(folder, minimal):
     help='Install local package as well.',
     multiple=True,
 )
-def build(use_requirements, local_package, config_file, profile):
+def build(requirements, local_package, config_file, profile):
     aws_lambda.build(
         CURRENT_DIR,
-        use_requirements=use_requirements,
+        requirements=requirements,
         local_package=local_package,
         config_file=config_file,
         profile_name=profile,
@@ -107,10 +107,10 @@ def invoke(event_file, config_file, profile, verbose):
     help='AWS profile to use.',
 )
 @click.option(
-    '--use-requirements',
-    default=False,
-    is_flag=True,
-    help='Install all packages defined in requirements.txt',
+    '--requirements',
+    default=None,
+    type=click.Path(),
+    help='Install all packages defined in supplied requirements file',
 )
 @click.option(
     '--local-package',
@@ -119,10 +119,10 @@ def invoke(event_file, config_file, profile, verbose):
     help='Install local package as well.',
     multiple=True,
 )
-def deploy(use_requirements, local_package, config_file, profile):
+def deploy(requirements, local_package, config_file, profile):
     aws_lambda.deploy(
         CURRENT_DIR,
-        use_requirements=use_requirements,
+        requirements=requirements,
         local_package=local_package,
         config_file=config_file,
         profile_name=profile,
@@ -140,10 +140,10 @@ def deploy(use_requirements, local_package, config_file, profile):
     help='AWS profile to use.',
 )
 @click.option(
-    '--use-requirements',
-    default=False,
-    is_flag=True,
-    help='Install all packages defined in requirements.txt',
+    '--requirements',
+    default=None,
+    type=click.Path(),
+    help='Install all packages defined in supplied requirements file',
 )
 @click.option(
     '--local-package',
@@ -152,10 +152,10 @@ def deploy(use_requirements, local_package, config_file, profile):
     help='Install local package as well.',
     multiple=True,
 )
-def upload(use_requirements, local_package, config_file, profile):
+def upload(requirements, local_package, config_file, profile):
     aws_lambda.upload(
         CURRENT_DIR,
-        use_requirements=use_requirements,
+        requirements=requirements,
         local_package=local_package,
         config_file=config_file,
         profile_name=profile,
@@ -173,10 +173,10 @@ def upload(use_requirements, local_package, config_file, profile):
     help='AWS profile to use.',
 )
 @click.option(
-    '--use-requirements',
-    default=False,
-    is_flag=True,
-    help='Install all packages defined in requirements.txt',
+    '--requirements',
+    default=None,
+    type=click.Path(),
+    help='Install all packages defined in supplied requirements file',
 )
 @click.option(
     '--local-package',
@@ -185,10 +185,10 @@ def upload(use_requirements, local_package, config_file, profile):
     multiple=True,
     help='Install local package as well.',
 )
-def deploy_s3(use_requirements, local_package, config_file, profile):
+def deploy_s3(requirements, local_package, config_file, profile):
     aws_lambda.deploy_s3(
         CURRENT_DIR,
-        use_requirements=use_requirements,
+        requirements=requirements,
         local_package=local_package,
         config_file=config_file,
         profile_name=profile,
