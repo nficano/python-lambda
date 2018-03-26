@@ -524,6 +524,10 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             'Description': cfg.get('description'),
             'Timeout': cfg.get('timeout', 15),
             'MemorySize': cfg.get('memory_size', 512),
+            'VpcConfig': {
+                'SubnetIds': cfg.get('subnet_ids', []),
+                'SecurityGroupIds': cfg.get('security_group_ids', []),
+            },
             'Publish': True,
         }
     else:
@@ -536,6 +540,10 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             'Description': cfg.get('description'),
             'Timeout': cfg.get('timeout', 15),
             'MemorySize': cfg.get('memory_size', 512),
+            'VpcConfig': {
+                'SubnetIds': cfg.get('subnet_ids', []),
+                'SecurityGroupIds': cfg.get('security_group_ids', []),
+            },
             'Publish': True,
         }
 
