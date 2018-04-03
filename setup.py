@@ -13,12 +13,11 @@ requirements = pip.req.parse_requirements(
     'requirements.txt', session=pip.download.PipSession(),
 )
 
+pip_requirements = [str(r.req) for r in requirements]
+
 # Only install futures package if using a Python version <= 2.7
-if sys.version_info[0] == 2:
-    pip_requirements = [str(r.req) for r in requirements]
-else:
-    pip_requirements = [str(r.req)
-                        for r in requirements if 'futures' not in str(r.req)]
+if sys.version_info < (3, 0):
+    pip_requirements.append('futures')
 
 test_requirements = [
     # TODO: put package test requirements here
