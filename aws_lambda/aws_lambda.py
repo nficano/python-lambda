@@ -17,6 +17,7 @@ from tempfile import mkdtemp
 import boto3
 import botocore
 import pip
+from pip._internal import main
 import yaml
 
 from .helpers import archive
@@ -407,7 +408,7 @@ def _install_packages(path, packages):
             package = package.replace('-e ', '')
 
         print('Installing {package}'.format(package=package))
-        pip.main(['install', package, '-t', path, '--ignore-installed'])
+        main(['install', package, '-t', path, '--ignore-installed'])
 
 
 def pip_install_to_target(path, requirements=None, local_package=None):
