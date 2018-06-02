@@ -2,22 +2,21 @@
 # -*- coding: utf-8 -*-
 import sys
 
-import pip
 from setuptools import find_packages
 from setuptools import setup
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-requirements = pip.req.parse_requirements(
-    'requirements.txt', session=pip.download.PipSession(),
-)
-
-pip_requirements = [str(r.req) for r in requirements]
+requirements = [
+    'boto3',
+    'click',
+    'PyYAML',
+]
 
 # Only install futures package if using a Python version <= 2.7
 if sys.version_info < (3, 0):
-    pip_requirements.append('futures')
+    requirements.append('futures')
 
 test_requirements = [
     # TODO: put package test requirements here
@@ -38,7 +37,7 @@ setup(
     },
     include_package_data=True,
     scripts=['scripts/lambda'],
-    install_requires=pip_requirements,
+    install_requires=requirements,
     license='ISCL',
     zip_safe=False,
     keywords='python-lambda',
