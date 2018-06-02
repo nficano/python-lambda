@@ -2,15 +2,24 @@
 # -*- coding: utf-8 -*-
 import sys
 
-import pip
+try: # for pip >= 10
+    from pip._internal.req import parse_requirements
+except ImportError: # for pip <= 9.0.3
+    from pip.req import parse_requirements
+
+try: # for pip >= 10
+    from pip._internal import download
+except ImportError: # for pip <= 9.0.3
+    from pip import download
+
 from setuptools import find_packages
 from setuptools import setup
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
 
-requirements = pip.req.parse_requirements(
-    'requirements.txt', session=pip.download.PipSession(),
+requirements = parse_requirements(
+    'requirements.txt', session=download.PipSession(),
 )
 
 pip_requirements = [str(r.req) for r in requirements]
