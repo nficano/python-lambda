@@ -119,13 +119,20 @@ def invoke(event_file, config_file, profile, verbose):
     help='Install local package as well.',
     multiple=True,
 )
-def deploy(requirements, local_package, config_file, profile):
+@click.option(
+    '--preserve-vpc',
+    default=False,
+    is_flag=True,
+    help='Preserve VPC configuration on existing functions',
+)
+def deploy(requirements, local_package, config_file, profile, preserve_vpc):
     aws_lambda.deploy(
         CURRENT_DIR,
         requirements=requirements,
         local_package=local_package,
         config_file=config_file,
         profile_name=profile,
+        preserve_vpc=preserve_vpc,
     )
 
 

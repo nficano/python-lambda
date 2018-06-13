@@ -85,6 +85,7 @@ def cleanup_old_versions(
 def deploy(
         src, requirements=None, local_package=None,
         config_file='config.yaml', profile_name=None,
+        preserve_vpc=False
 ):
     """Deploys a new function to AWS Lambda.
 
@@ -111,7 +112,7 @@ def deploy(
 
     existing_config = get_function_config(cfg)
     if existing_config:
-        update_function(cfg, path_to_zip_file, existing_config)
+        update_function(cfg, path_to_zip_file, existing_config, preserve_vpc)
     else:
         create_function(cfg, path_to_zip_file)
 
@@ -119,6 +120,7 @@ def deploy(
 def deploy_s3(
     src, requirements=None, local_package=None,
     config_file='config.yaml', profile_name=None,
+    preserve_vpc=False
 ):
     """Deploys a new function via AWS S3.
 
@@ -147,7 +149,7 @@ def deploy_s3(
     existing_config = get_function_config(cfg)
     if existing_config:
         update_function(cfg, path_to_zip_file, existing_config, use_s3=use_s3,
-                        s3_file=s3_file)
+                        s3_file=s3_file, preserve_vpc=preserve_vpc)
     else:
         create_function(cfg, path_to_zip_file, use_s3=use_s3, s3_file=s3_file)
 
@@ -580,7 +582,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
 
 
 def update_function(
-        cfg, path_to_zip_file, existing_cfg, use_s3=False, s3_file=None
+        cfg, path_to_zip_file, existing_cfg, use_s3=False, s3_file=None, preserve_vpc=False
 ):
     """Updates the code of an existing Lambda function"""
 
@@ -632,11 +634,15 @@ def update_function(
         'Description': cfg.get('description'),
         'Timeout': cfg.get('timeout', 15),
         'MemorySize': cfg.get('memory_size', 512),
-        'VpcConfig': {
+    }
+
+    if preserve_vpc:
+        kwargs['VpcConfig'] = existing_cfg.get('VpcConfig')
+    else:
+        kwargs['VpcConfig'] = {
             'SubnetIds': cfg.get('subnet_ids', []),
             'SecurityGroupIds': cfg.get('security_group_ids', []),
-        },
-    }
+        }
 
     if 'environment_variables' in cfg:
         kwargs.update(
