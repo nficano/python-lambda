@@ -112,7 +112,7 @@ def deploy(
 
     existing_config = get_function_config(cfg)
     if existing_config:
-        update_function(cfg, path_to_zip_file, existing_config, preserve_vpc)
+        update_function(cfg, path_to_zip_file, existing_config, preserve_vpc=preserve_vpc)
     else:
         create_function(cfg, path_to_zip_file)
 
