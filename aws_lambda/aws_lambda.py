@@ -24,6 +24,7 @@ from .helpers import get_environment_variable_value
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
+from .helpers import LambdaContext
 
 
 ARN_PREFIXES = {
@@ -226,11 +227,14 @@ def invoke(
     # into a function we can execute.
     fn = get_callable_handler_function(src, handler)
 
-    # TODO: look into mocking the ``context`` variable, currently being passed
-    # as None.
+    timeout = cfg.get('timeout')
+    if timeout:
+        context = LambdaContext(cfg.get('function_name'),timeout)
+    else:
+        context = LambdaContext(cfg.get('function_name'))
 
     start = time.time()
-    results = fn(event, None)
+    results = fn(event, context)
     end = time.time()
 
     print('{0}'.format(results))

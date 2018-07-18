@@ -3,6 +3,7 @@ import datetime as dt
 import os
 import re
 import zipfile
+import time
 
 
 def mkdir(path):
@@ -41,3 +42,22 @@ def get_environment_variable_value(val):
         if match is not None:
             env_val = os.environ.get(match.group('environment_key_name'))
     return env_val
+
+class LambdaContext:   
+    current_milli_time = lambda x: int(round(time.time() * 1000))
+
+    def get_remaining_time_in_millis(self):
+        return max(0, self.timeout_millis - (self.current_milli_time() - self.start_time_millis))
+
+    def __init__(self,function_name, timeoutSeconds = 3):
+        self.function_name = function_name
+        self.function_version = None
+        self.invoked_function_arn = None
+        self.memory_limit_in_mb = None
+        self.aws_request_id = None
+        self.log_group_name = None
+        self.log_stream_name = None
+        self.identity = None
+        self.client_context = None
+        self.timeout_millis = timeoutSeconds * 1000
+        self.start_time_millis = self.current_milli_time()
