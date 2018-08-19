@@ -16,6 +16,9 @@ runtime: python2.7
 aws_access_key_id:
 aws_secret_access_key:
 
+# set xray tracing config to either PassThrough or Active
+aws_xray_tracing_config: PassThrough
+
 # dist_directory: dist
 # timeout: 15
 # memory_size: 512

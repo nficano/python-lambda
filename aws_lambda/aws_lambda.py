@@ -539,6 +539,9 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
                 'SecurityGroupIds': cfg.get('security_group_ids', []),
             },
             'Publish': True,
+            'TracingConfig': {
+                'Mode': cfg.get('aws_xray_tracing_config', 'PassThrough')
+            },
         }
     else:
         kwargs = {
@@ -555,6 +558,9 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
                 'SecurityGroupIds': cfg.get('security_group_ids', []),
             },
             'Publish': True,
+            'TracingConfig': {
+                'Mode': cfg.get('aws_xray_tracing_config', 'PassThrough')
+            },
         }
 
     if 'tags' in cfg:
@@ -635,6 +641,9 @@ def update_function(
         'VpcConfig': {
             'SubnetIds': cfg.get('subnet_ids', []),
             'SecurityGroupIds': cfg.get('security_group_ids', []),
+        },
+        'TracingConfig': {
+            'Mode': cfg.get('aws_xray_tracing_config', 'PassThrough')
         },
     }
 
