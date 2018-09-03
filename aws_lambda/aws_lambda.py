@@ -6,25 +6,24 @@ import json
 import logging
 import os
 import sys
-import time
 from collections import defaultdict
 from imp import load_source
-from shutil import copy
-from shutil import copyfile
-from shutil import copytree
 from tempfile import mkdtemp
 
 import boto3
 import botocore
 import pip
+import time
 import yaml
+from shutil import copy
+from shutil import copyfile
+from shutil import copytree
 
 from .helpers import archive
 from .helpers import get_environment_variable_value
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
-
 
 ARN_PREFIXES = {
     'us-gov-west-1': 'aws-us-gov',
@@ -59,7 +58,7 @@ def cleanup_old_versions(
 
         client = get_client(
             'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
-            cfg.get('region'),
+            cfg.get('region'), **get_endpoint_url(cfg, 'lambda')
         )
 
         response = client.list_versions_by_function(
@@ -83,8 +82,8 @@ def cleanup_old_versions(
 
 
 def deploy(
-        src, requirements=None, local_package=None,
-        config_file='config.yaml', profile_name=None,
+    src, requirements=None, local_package=None,
+    config_file='config.yaml', profile_name=None,
 ):
     """Deploys a new function to AWS Lambda.
 
@@ -153,8 +152,8 @@ def deploy_s3(
 
 
 def upload(
-        src, requirements=None, local_package=None,
-        config_file='config.yaml', profile_name=None,
+    src, requirements=None, local_package=None,
+    config_file='config.yaml', profile_name=None,
 ):
     """Uploads a new function to AWS S3.
 
@@ -398,9 +397,11 @@ def _install_packages(path, packages):
     :param list packages:
         A list of packages to be installed via pip.
     """
+
     def _filter_blacklist(package):
         blacklist = ['-i', '#', 'Python==', 'python-lambda==']
         return all(package.startswith(entry) is False for entry in blacklist)
+
     filtered_packages = filter(_filter_blacklist, packages)
     for package in filtered_packages:
         if package.startswith('-e '):
@@ -475,7 +476,7 @@ def get_account_id(
 
 def get_client(
     client, profile_name, aws_access_key_id, aws_secret_access_key,
-    region=None,
+    region=None, endpoint_url=None
 ):
     """Shortcut for getting an initialized instance of the boto3 client."""
 
@@ -485,7 +486,13 @@ def get_client(
         aws_secret_access_key=aws_secret_access_key,
         region_name=region,
     )
-    return boto3.client(client)
+
+    client_args = dict()
+
+    if endpoint_url:
+        client_args["endpoint_url"] = endpoint_url
+
+    return boto3.client(client, **client_args)
 
 
 def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
@@ -509,7 +516,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
 
     client = get_client(
         'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
-        cfg.get('region'),
+        cfg.get('region'), **get_endpoint_url(cfg, 'lambda')
     )
 
     # Do we prefer development variable over config?
@@ -580,7 +587,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
 
 
 def update_function(
-        cfg, path_to_zip_file, existing_cfg, use_s3=False, s3_file=None
+    cfg, path_to_zip_file, existing_cfg, use_s3=False, s3_file=None
 ):
     """Updates the code of an existing Lambda function"""
 
@@ -602,7 +609,7 @@ def update_function(
 
     client = get_client(
         'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
-        cfg.get('region'),
+        cfg.get('region'), **get_endpoint_url(cfg, 'lambda')
     )
 
     # Do we prefer development variable over config?
@@ -670,9 +677,10 @@ def upload_s3(cfg, path_to_zip_file, *use_s3):
     profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
+
     client = get_client(
         's3', profile_name, aws_access_key_id, aws_secret_access_key,
-        cfg.get('region'),
+        cfg.get('region'), **get_endpoint_url(cfg, 's3')
     )
     byte_stream = b''
     with open(path_to_zip_file, mode='rb') as fh:
@@ -710,9 +718,10 @@ def get_function_config(cfg):
     profile_name = cfg.get('profile')
     aws_access_key_id = cfg.get('aws_access_key_id')
     aws_secret_access_key = cfg.get('aws_secret_access_key')
+
     client = get_client(
         'lambda', profile_name, aws_access_key_id, aws_secret_access_key,
-        cfg.get('region'),
+        cfg.get('region'), **get_endpoint_url(cfg, 'lambda')
     )
 
     try:
@@ -729,3 +738,14 @@ def read_cfg(path_to_config_file, profile_name):
     elif 'AWS_PROFILE' in os.environ:
         cfg['profile'] = os.environ['AWS_PROFILE']
     return cfg
+
+
+def get_endpoint_url(config, client):
+    if config.get('endpoint_url_lambda') is None or config.get('endpoint_url_s3') is None:
+        return None
+    if client is 'lambda':
+        return {'endpoint_url': config.get('endpoint_url_lambda')}
+    elif client is 's3':
+        return {'endpoint_url': config.get('endpoint_url_s3')}
+    else:
+        return None
