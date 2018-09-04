@@ -508,7 +508,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
         profile_name, aws_access_key_id, aws_secret_access_key, cfg.get(
             'region',
         ),
-    )
+    ) if not is_local(cfg) else '000000000000'
     role = get_role_name(
         cfg.get('region'), account_id,
         cfg.get('role', 'lambda_basic_execution'),
@@ -601,7 +601,7 @@ def update_function(
         profile_name, aws_access_key_id, aws_secret_access_key, cfg.get(
             'region',
         ),
-    )
+    ) if not is_local(cfg) else '000000000000'
     role = get_role_name(
         cfg.get('region'), account_id,
         cfg.get('role', 'lambda_basic_execution'),
@@ -740,8 +740,14 @@ def read_cfg(path_to_config_file, profile_name):
     return cfg
 
 
-def get_endpoint_url(config, client):
+def is_local(config):
     if config.get('endpoint_url_lambda') is None or config.get('endpoint_url_s3') is None:
+        return False
+    return True
+
+
+def get_endpoint_url(config, client):
+    if not is_local(config):
         return None
     if client is 'lambda':
         return {'endpoint_url': config.get('endpoint_url_lambda')}
