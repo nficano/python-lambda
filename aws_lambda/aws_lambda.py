@@ -637,7 +637,11 @@ def update_function(
     }
 
     if preserve_vpc:
-        kwargs['VpcConfig'] = existing_cfg.get('VpcConfig')
+        kwargs['VpcConfig'] = existing_cfg.get('Configuration').get('VpcConfig')
+        if kwargs['VpcConfig'] is None:
+            kwargs['VpcConfig'] = {}
+        else:
+            del kwargs['VpcConfig']['VpcId']
     else:
         kwargs['VpcConfig'] = {
             'SubnetIds': cfg.get('subnet_ids', []),
