@@ -16,8 +16,8 @@ from tempfile import mkdtemp
 
 import boto3
 import botocore
-import pip
 import yaml
+import subprocess
 
 from .helpers import archive
 from .helpers import get_environment_variable_value
@@ -417,6 +417,7 @@ def _install_packages(path, packages):
             main(['install', package, '-t', path, '--ignore-installed'])
         else:
             pip.main(['install', package, '-t', path, '--ignore-installed'])
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', package, '-t', path, '--ignore-installed'])
 
 
 def pip_install_to_target(path, requirements=None, local_package=None):
@@ -436,12 +437,8 @@ def pip_install_to_target(path, requirements=None, local_package=None):
     packages = []
     if not requirements:
         print('Gathering pip packages')
-        pip_major_version = [int(v) for v in pip.__version__.split('.')][0]
-        if pip_major_version >= 10:
-            from pip._internal import operations
-            packages.extend(operations.freeze.freeze())
-        else:
-            packages.extend(pip.operations.freeze.freeze())
+        pkgStr = subprocess.check_call([sys.executable, '-m', 'pip', 'freeze'])
+        packages.extend(pkgStr.decode('utf-8').splitlines())
     else:
         if os.path.exists(requirements):
             print('Gathering requirement packages')
