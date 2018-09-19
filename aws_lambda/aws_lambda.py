@@ -16,14 +16,15 @@ from tempfile import mkdtemp
 
 import boto3
 import botocore
-import pip
 import yaml
+import subprocess
 
 from .helpers import archive
 from .helpers import get_environment_variable_value
 from .helpers import mkdir
 from .helpers import read
 from .helpers import timestamp
+from .helpers import LambdaContext
 
 
 ARN_PREFIXES = {
@@ -228,11 +229,14 @@ def invoke(
     # into a function we can execute.
     fn = get_callable_handler_function(src, handler)
 
-    # TODO: look into mocking the ``context`` variable, currently being passed
-    # as None.
+    timeout = cfg.get('timeout')
+    if timeout:
+        context = LambdaContext(cfg.get('function_name'),timeout)
+    else:
+        context = LambdaContext(cfg.get('function_name'))
 
     start = time.time()
-    results = fn(event, None)
+    results = fn(event, context)
     end = time.time()
 
     print('{0}'.format(results))
@@ -409,12 +413,8 @@ def _install_packages(path, packages):
             package = package.replace('-e ', '')
 
         print('Installing {package}'.format(package=package))
-        pip_major_version = [int(v) for v in pip.__version__.split('.')][0]
-        if pip_major_version >= 10:
-            from pip._internal import main
-            main(['install', package, '-t', path, '--ignore-installed'])
-        else:
-            pip.main(['install', package, '-t', path, '--ignore-installed'])
+        subprocess.check_call([sys.executable, '-m', 'pip', 'install', package, '-t', path, '--ignore-installed'])
+    print ('Install directory contents are now: {directory}'.format(directory=os.listdir(path)))
 
 
 def pip_install_to_target(path, requirements=None, local_package=None):
@@ -434,12 +434,8 @@ def pip_install_to_target(path, requirements=None, local_package=None):
     packages = []
     if not requirements:
         print('Gathering pip packages')
-        pip_major_version = [int(v) for v in pip.__version__.split('.')][0]
-        if pip_major_version >= 10:
-            from pip._internal import operations
-            packages.extend(operations.freeze.freeze())
-        else:
-            packages.extend(pip.operations.freeze.freeze())
+        pkgStr = subprocess.check_call([sys.executable, '-m', 'pip', 'freeze'])
+        packages.extend(pkgStr.decode('utf-8').splitlines())
     else:
         if os.path.exists(requirements):
             print('Gathering requirement packages')

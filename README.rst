@@ -19,7 +19,7 @@ With python-lambda and `pytube <https://github.com/nficano/pytube/>`_ both conti
 Description
 ===========
 
-AWS Lambda is a service that allows you to write Python, Java, Node.js, C# or Go code that gets executed in response to events like http requests or files uploaded to S3.
+AWS Lambda is a service that allows you to write Python, Java, or Node.js code that gets executed in response to events like http requests or files uploaded to S3.
 
 Working with Lambda is relatively easy, but the process of bundling and deploying your code is not as simple as it could be.
 
