@@ -436,7 +436,7 @@ def pip_install_to_target(path, requirements=None, local_package=None):
     packages = []
     if not requirements:
         print('Gathering pip packages')
-        pkgStr = subprocess.check_call([sys.executable, '-m', 'pip', 'freeze'])
+        pkgStr = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
         packages.extend(pkgStr.decode('utf-8').splitlines())
     else:
         if os.path.exists(requirements):
