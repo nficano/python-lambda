@@ -65,3 +65,4 @@ target/
 .*.sw?
 aws_lambda/.DS_Store
 .DS_Store
+.vscode/

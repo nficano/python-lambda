@@ -28,6 +28,8 @@ from .helpers import LambdaContext
 
 
 ARN_PREFIXES = {
+    'cn-north-1': 'aws-cn',
+    'cn-northwest-1': 'aws-cn',
     'us-gov-west-1': 'aws-us-gov',
 }
 
@@ -434,7 +436,7 @@ def pip_install_to_target(path, requirements=None, local_package=None):
     packages = []
     if not requirements:
         print('Gathering pip packages')
-        pkgStr = subprocess.check_call([sys.executable, '-m', 'pip', 'freeze'])
+        pkgStr = subprocess.check_output([sys.executable, '-m', 'pip', 'freeze'])
         packages.extend(pkgStr.decode('utf-8').splitlines())
     else:
         if os.path.exists(requirements):
@@ -529,7 +531,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
                 'S3Bucket': '{}'.format(buck_name),
                 'S3Key': '{}'.format(s3_file),
             },
-            'Description': cfg.get('description'),
+            'Description': cfg.get('description', ''),
             'Timeout': cfg.get('timeout', 15),
             'MemorySize': cfg.get('memory_size', 512),
             'VpcConfig': {
@@ -545,7 +547,7 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
             'Role': role,
             'Handler': cfg.get('handler'),
             'Code': {'ZipFile': byte_stream},
-            'Description': cfg.get('description'),
+            'Description': cfg.get('description', ''),
             'Timeout': cfg.get('timeout', 15),
             'MemorySize': cfg.get('memory_size', 512),
             'VpcConfig': {
@@ -575,6 +577,10 @@ def create_function(cfg, path_to_zip_file, use_s3=False, s3_file=None):
         )
 
     client.create_function(**kwargs)
+
+    concurrency = get_concurrency(cfg)
+    if concurrency > 0:
+        client.put_function_concurrency(FunctionName=func_name, ReservedConcurrentExecutions=concurrency)
 
 
 def update_function(
@@ -627,7 +633,7 @@ def update_function(
         'Role': role,
         'Runtime': cfg.get('runtime'),
         'Handler': cfg.get('handler'),
-        'Description': cfg.get('description'),
+        'Description': cfg.get('description', ''),
         'Timeout': cfg.get('timeout', 15),
         'MemorySize': cfg.get('memory_size', 512),
     }
@@ -659,6 +665,12 @@ def update_function(
         )
 
     ret = client.update_function_configuration(**kwargs)
+
+    concurrency = get_concurrency(cfg)
+    if concurrency > 0:
+        client.put_function_concurrency(FunctionName=cfg.get('function_name'), ReservedConcurrentExecutions=concurrency)
+    elif 'Concurrency' in existing_cfg:
+        client.delete_function_concurrency(FunctionName=cfg.get('function_name'))
 
     if 'tags' in cfg:
         tags = {
@@ -729,6 +741,12 @@ def get_function_config(cfg):
     except client.exceptions.ResourceNotFoundException as e:
         if 'Function not found' in str(e):
             return False
+
+
+def get_concurrency(cfg):
+    """Return the Reserved Concurrent Executions if present in the config"""
+    concurrency = int(cfg.get('concurrency', 0))
+    return max(0, concurrency)
 
 
 def read_cfg(path_to_config_file, profile_name):
