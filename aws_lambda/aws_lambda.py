@@ -11,6 +11,7 @@ from collections import defaultdict
 from imp import load_source
 from shutil import copy
 from shutil import copyfile
+from shutil import copystat
 from shutil import copytree
 from tempfile import mkdtemp
 
@@ -354,6 +355,7 @@ def build(
 
             # Copy handler file into root of the packages folder.
             copyfile(f, os.path.join(path_to_temp, filename))
+            copystat(f, os.path.join(path_to_temp, filename))
         elif os.path.isdir(f):
             destination_folder = os.path.join(path_to_temp, f[len(src) + 1:])
             copytree(f, destination_folder)
