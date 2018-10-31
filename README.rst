@@ -10,6 +10,9 @@ python-λ
   :alt: Python Versions
   :target: https://pypi.python.org/pypi/python-lambda/
 
+.. image:: https://img.shields.io/pypi/dm/pytube.svg
+  :alt: PyPI - Downloads
+
 Python-lambda is a toolset for developing and deploying *serverless* Python code in AWS Lambda.
 
 A call for contributors
