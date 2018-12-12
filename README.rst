@@ -1,11 +1,4 @@
-<p align="center">
-  <img
-    src="https://s3.amazonaws.com/nf-assets/dotfiles-logo.svg"
-    alt="dotfiles"
-    width="474"
-    height="148" />
-</p>
-
+.. image:: https://s3.amazonaws.com/nf-assets/python-lambda.svg
 
 .. image:: https://img.shields.io/pypi/v/python-lambda.svg
   :alt: Pypi
