@@ -1,6 +1,6 @@
 <div align="center">
   <p>
-  <img src="https://s3.amazonaws.com/nf-assets/python-lambda.svg" width="681" height="100" alt="python-lambda logo" />
+  <img src="https://s3.amazonaws.com/nf-assets/python-lambda.svg" width="600" height="88" alt="python-lambda logo" />
   </p>
   <p align="center">
 	  <img src="https://img.shields.io/pypi/v/python-lambda.svg" alt="pypi" />
