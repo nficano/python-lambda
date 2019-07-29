@@ -4,6 +4,6 @@ click==6.6
 docutils==0.12
 jmespath==0.9.0
 pyaml==15.8.2
-python-dateutil==2.5.3
+python-dateutil==2.8.0
 PyYAML==5.1
 six==1.10.0
