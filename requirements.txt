@@ -1,6 +1,6 @@
 boto3==1.4.4
 botocore==1.5.62
-click==6.6
+click==7.0
 docutils==0.12
 jmespath==0.9.0
 pyaml==15.8.2
