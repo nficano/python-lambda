@@ -752,7 +752,7 @@ def get_concurrency(cfg):
 
 
 def read_cfg(path_to_config_file, profile_name):
-    cfg = read(path_to_config_file, loader=yaml.load)
+    cfg = read(path_to_config_file, loader=yaml.full_load)
     if profile_name is not None:
         cfg['profile'] = profile_name
     elif 'AWS_PROFILE' in os.environ:
