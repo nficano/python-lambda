@@ -334,7 +334,7 @@ def build(
         d.strip() for d in build_source_directories.split(',')
     ]
 
-    files = []
+    files = set()
     for filename in os.listdir(src):
         if os.path.isfile(filename):
             if filename == '.DS_Store':
@@ -342,10 +342,17 @@ def build(
             if filename == config_file:
                 continue
             print('Bundling: %r' % filename)
-            files.append(os.path.join(src, filename))
+            files.add(os.path.join(src, filename))
         elif os.path.isdir(filename) and filename in source_directories:
             print('Bundling directory: %r' % filename)
-            files.append(os.path.join(src, filename))
+            files.add(os.path.join(src, filename))
+
+    # Bundling packages not in the top level project directory but declared in source_directories
+    for src_dir in source_directories:
+        file_path = os.path.join(src, src_dir)
+        if file_path not in files:
+            print('Bundling directory: %r' % src_dir)
+            files.add(file_path)
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
