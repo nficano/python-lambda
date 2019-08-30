@@ -209,7 +209,7 @@ execute ``lambda upload`` to initiate the transfer.
 
 ### Deploying via S3
 You can also choose to use S3 as your source for Lambda deployments.  This can
-be done by issuing ``lambda deploy_s3`` with the same variables/AWS permissions
+be done by issuing ``lambda deploy-s3`` with the same variables/AWS permissions
 you'd set for executing the ``upload`` command.
 
 ### Development
