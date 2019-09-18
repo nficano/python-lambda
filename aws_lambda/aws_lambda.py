@@ -336,16 +336,17 @@ def build(
 
     files = []
     for filename in os.listdir(src):
-        if os.path.isfile(filename):
+        abs_filename = os.path.join(src, filename)
+        if os.path.isfile(abs_filename):
             if filename == '.DS_Store':
                 continue
             if filename == config_file:
                 continue
             print('Bundling: %r' % filename)
-            files.append(os.path.join(src, filename))
+            files.append(abs_filename)
         elif os.path.isdir(filename) and filename in source_directories:
             print('Bundling directory: %r' % filename)
-            files.append(os.path.join(src, filename))
+            files.append(abs_filename)
 
     # "cd" into `temp_path` directory.
     os.chdir(path_to_temp)
