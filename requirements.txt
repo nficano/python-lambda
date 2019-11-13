@@ -1,4 +1,4 @@
-boto3==1.4.4
+boto3==1.10.16
 botocore==1.5.62
 click==6.6
 docutils==0.12
