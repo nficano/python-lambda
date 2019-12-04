@@ -32,7 +32,7 @@ parts.
 
 # Requirements
 
-* Python 2.7 & 3.6 (At the time of writing this, AWS Lambda only supports Python 2.7/3.6).
+* Python 2.7 & 3.6+ (At the time of writing this, AWS Lambda supports Python 2.7 and 3.6/3.7/3.8).
 * Pip (~8.1.1)
 * Virtualenv (~15.0.0)
 * Virtualenvwrapper (~4.7.1)
