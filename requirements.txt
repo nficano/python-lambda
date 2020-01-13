@@ -1,5 +1,5 @@
 boto3==1.4.4
-botocore==1.5.62
+botocore==1.14.0
 click==6.6
 docutils==0.12
 jmespath==0.9.0
