@@ -1,5 +1,5 @@
 bumpversion==0.5.3
-pre-commit==0.15.0
+pre-commit==2.0.0
 pytest>=3.6
 pytest-cov
 flake8
