@@ -14,6 +14,7 @@ wheel = "*"
 pytest = "*"
 codecov = "*"
 coveralls = "*"
+pytest-cov = "*"
 
 [packages]
 boto3 = "==1.4.4"
