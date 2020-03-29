@@ -191,7 +191,7 @@ This would create environment variables in the lambda instance upon deploy. If
 your functions don't need environment variables, simply leave this section out
 of your config.
 
-### Uploading to S3 
+### Uploading to S3
 You may find that you do not need the toolkit to fully
 deploy your Lambda or that your code bundle is too large to upload via the API.
 You can use the ``upload`` command to send the bundle to an S3 bucket of your
@@ -219,7 +219,7 @@ requests are very welcome and highly encouraged. Please open an issue if this
 tool does not function as you'd expect.
 
 
-### How to release updates 
+### How to release updates
 If this is the first time you're releasing to pypi,
 you'll need to run: ``pip install -r tests/dev_requirements.txt``.
 
