@@ -54,7 +54,7 @@ class UploadCommand(Command):
 
 setup(
     name="python-lambda",
-    version="11.0.0",
+    version="11.1.0",
     author="Nick Ficano",
     author_email="nficano@gmail.com",
     packages=find_packages(),
