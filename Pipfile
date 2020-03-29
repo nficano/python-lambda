@@ -11,6 +11,9 @@ black = "*"
 bumpversion = "*"
 pipenv-to-requirements = "*"
 wheel = "*"
+pytest = "*"
+codecov = "*"
+coveralls = "*"
 
 [packages]
 boto3 = "==1.4.4"

@@ -1,6 +1,10 @@
 dev:
 	pipenv install --dev
 
+pipenv:
+	pip install pipenv
+	pipenv install --dev
+
 deploy-patch: requirements bumpversion-patch sdist bdist wheels upload clean
 
 deploy-minor: requirements bumpversion-minor sdist bdist wheels upload clean
@@ -19,8 +23,6 @@ bdist: requirements
 wheels: requirements
 	python setup.py bdist_wheel
 
-clean: clean-build clean-pyc
-
 bumpversion-patch:
 	bumpversion patch
 	git push
@@ -36,8 +38,7 @@ bumpversion-major:
 	git push
 	git push --tags
 
-upload:
-	python setup.py sdist bdist bdist_wheel upload
+clean: clean-build clean-pyc
 
 clean-build:
 	rm -fr build/
@@ -53,3 +54,8 @@ clean-pyc:
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
 	find . -name '.pytest_cache' -exec rm -fr {} +
+	find . -name '.mypy_cache' -exec rm -fr {} +
+
+upload: clean
+	python setup.py sdist bdist_wheel
+	twine upload dist/*

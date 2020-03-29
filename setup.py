@@ -8,11 +8,6 @@ from setuptools import find_packages
 from setuptools import Command
 from setuptools import setup
 
-REQUIREMENTS = [
-    "boto3",
-    "click",
-    "PyYAML",
-]
 PACKAGE_DATA = {
     "aws_lambda": ["project_templates/*"],
     "": ["*.json"],
@@ -68,7 +63,6 @@ setup(
     package_data=PACKAGE_DATA,
     test_suite="tests",
     tests_require=[],
-    install_requires=REQUIREMENTS,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
