@@ -14,7 +14,7 @@ wheel = "*"
 
 [packages]
 boto3 = "==1.4.4"
-botocore = "==1.5.62"
+botocore = "==1.5.95"
 click = "==6.6"
 docutils = "*"
 jmespath = "==0.9.0"
