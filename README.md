@@ -218,25 +218,25 @@ Contributions in the form of patches, tests and feature creation and/or
 requests are very welcome and highly encouraged. Please open an issue if this
 tool does not function as you'd expect.
 
+### Environment Setup
+1. [Install pipenv](https://github.com/pypa/pipenv)
+2. [Install direnv](https://direnv.net/)
+3. [Install Precommit](https://pre-commit.com/#install) (optional but preferred)
+4. ``cd`` into the project and enter "direnv allow" when prompted. This will begin
+   installing all the development dependancies.
+5. If you installed pre-commit, run ``pre-commit install`` inside the project
+   directory to setup the githooks.
 
-### How to release updates
-If this is the first time you're releasing to pypi,
-you'll need to run: ``pip install -r tests/dev_requirements.txt``.
+### Releasing to Pypi
+Once you pushed your chances to master, run **one** of the following:
 
-Once complete, execute the following commands:
+ ```sh
+ # If you're installing a major release:
+ make deploy-major
 
-```bash
-git checkout master
+ # If you're installing a minor release:
+ make deploy-minor
 
-# Increment the version number and tag the release.
-bumpversion [major|minor|patch]
-
-# Upload the distribution to PyPi
-python setup.py sdist bdist_wheel upload
-
-# Since master often contains work-in-progress changes, increment the version
-# to a patch release to prevent inaccurate attribution.
-bumpversion --no-tag patch
-
-git push origin master --tags
-```
+# If you're installing a patch release:
+make deploy-patch
+ ```
