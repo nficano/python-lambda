@@ -10,7 +10,7 @@ python:
 before_install:
   - pip install pipenv --upgrade
 script: 
-  - pipenv
+  - pipenv install --dev
   - pytest
 sudo: false
 notifications:
