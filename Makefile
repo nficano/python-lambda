@@ -5,11 +5,11 @@ pipenv:
 	pip install pipenv
 	pipenv install --dev
 
-deploy-patch: requirements bumpversion-patch upload clean
+deploy-patch: clean requirements bumpversion-patch upload clean
 
-deploy-minor: requirements bumpversion-minor upload clean
+deploy-minor: clean requirements bumpversion-minor upload clean
 
-deploy-major: requirements bumpversion-major upload clean
+deploy-major: clean requirements bumpversion-major upload clean
 
 requirements:
 	pipenv_to_requirements
