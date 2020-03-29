@@ -8,6 +8,15 @@ from setuptools import find_packages
 from setuptools import Command
 from setuptools import setup
 
+REQUIREMENTS = [
+    "boto3",
+    "click",
+    "PyYAML",
+]
+PACKAGE_DATA = {
+    "aws_lambda": ["project_templates/*"],
+    "": ["*.json"],
+}
 THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 README = os.path.join(THIS_DIR, "README.md")
 
@@ -47,10 +56,6 @@ class UploadCommand(Command):
         os.system("twine upload dist/*")
         sys.exit()
 
-package_data = {
-    "aws_lambda": ["project_templates/*"],
-    "": ["*.json"],
-}
 
 setup(
     name="python-lambda",
@@ -60,7 +65,10 @@ setup(
     packages=find_packages(),
     url="https://github.com/nficano/python-lambda",
     license="ISCL",
-    package_data=package_data,
+    package_data=PACKAGE_DATA,
+    test_suite="tests",
+    tests_require=[],
+    install_requires=REQUIREMENTS,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
