@@ -54,7 +54,7 @@ package_data = {
 
 setup(
     name="python-lambda",
-    version="9.0.0",
+    version="10.0.0",
     author="Nick Ficano",
     author_email="nficano@gmail.com",
     packages=find_packages(),
