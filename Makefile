@@ -1,10 +1,43 @@
-help:
-	@echo "clean - remove all build, test, coverage and Python artifacts"
-	@echo "lint - check style with flake8"
-	@echo "release - package and upload a release"
-	@echo "install - install the package to the active Python's site-packages"
+dev:
+	pipenv install --dev
 
-clean: clean-build clean-pyc clean-merge
+deploy-patch: requirements bumpversion-patch sdist bdist wheels upload clean
+
+deploy-minor: requirements bumpversion-minor sdist bdist wheels upload clean
+
+deploy-major: requirements bumpversion-major sdist bdist wheels upload clean
+
+requirements:
+	pipenv_to_requirements
+
+sdist: requirements
+	python setup.py sdist
+
+bdist: requirements
+	python setup.py bdist
+
+wheels: requirements
+	python setup.py bdist_wheel
+
+clean: clean-build clean-pyc
+
+bumpversion-patch:
+	bumpversion patch
+	git push
+	git push --tags
+
+bumpversion-minor:
+	bumpversion minor
+	git push
+	git push --tags
+
+bumpversion-major:
+	bumpversion major
+	git push
+	git push --tags
+
+upload:
+	python setup.py sdist bdist bdist_wheel upload
 
 clean-build:
 	rm -fr build/
@@ -12,26 +45,11 @@ clean-build:
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
+	find . -name '*.DS_Store' -exec rm -f {} +
 
 clean-pyc:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
 	find . -name '*~' -exec rm -f {} +
 	find . -name '__pycache__' -exec rm -fr {} +
-
-clean-merge:
-	find . -name '*.orig' -exec rm -f {} +
-
-lint:
-	flake8 python-lambda tests
-
-release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
-
-install: clean
-	python setup.py install
-
-test:
-	 py.test tests/ --cov aws_lambda --cov-report term-missing
-
+	find . -name '.pytest_cache' -exec rm -fr {} +
