@@ -5,23 +5,14 @@ pipenv:
 	pip install pipenv
 	pipenv install --dev
 
-deploy-patch: requirements bumpversion-patch sdist bdist wheels upload clean
+deploy-patch: requirements bumpversion-patch upload clean
 
-deploy-minor: requirements bumpversion-minor sdist bdist wheels upload clean
+deploy-minor: requirements bumpversion-minor upload clean
 
-deploy-major: requirements bumpversion-major sdist bdist wheels upload clean
+deploy-major: requirements bumpversion-major upload clean
 
 requirements:
 	pipenv_to_requirements
-
-sdist: requirements
-	python setup.py sdist
-
-bdist: requirements
-	python setup.py bdist
-
-wheels: requirements
-	python setup.py bdist_wheel
 
 bumpversion-patch:
 	bumpversion patch
@@ -58,4 +49,5 @@ clean-pyc:
 	find . -name '.mypy_cache' -exec rm -fr {} +
 
 upload:
+	python setup.py sdist bdist_wheel
 	twine upload dist/*
