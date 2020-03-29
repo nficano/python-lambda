@@ -1,5 +1,10 @@
 include LICENSE
 include README.md
-recursive-include tests *.py *.yaml
+recursive-include tests
+recursiveinclude *.json 
+recursive-include *.py 
+recursive-include *.txt 
+recursive-include *.yaml
 recursive-include templates *
-recursive-exclude * *.py[co]
+recursive-exclude * __pycache__
+recursive-include conf.py
