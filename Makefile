@@ -57,5 +57,6 @@ clean-pyc:
 	find . -name '.pytest_cache' -exec rm -fr {} +
 	find . -name '.mypy_cache' -exec rm -fr {} +
 
-upload: clean
+upload:
+	python setup.py sdist bdist_wheel
 	twine upload dist/*
