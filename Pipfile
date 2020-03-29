@@ -22,7 +22,7 @@ botocore = "==1.5.62"
 click = "==6.6"
 docutils = "*"
 jmespath = "==0.9.0"
-pyaml = "==15.8.2"
+pyaml = "==20.3.1"
 python-dateutil = "==2.5.3"
 PyYAML = "==5.1"
 
