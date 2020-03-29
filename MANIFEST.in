@@ -1,10 +1,11 @@
+include HISTORY.rst
 include LICENSE
-include README.md
-recursive-include tests
-recursiveinclude *.json 
-recursive-include *.py 
-recursive-include *.txt 
-recursive-include *.yaml
+include README.rst
+include python/boto/endpoints.json
+include aws_lambda/project_template/config.yaml
+recursive-include tests *.json *.py *.txt *.yaml
 recursive-include templates *
 recursive-exclude * __pycache__
-recursive-include conf.py
+recursive-exclude * *.py[co]
+
+recursive-include docs *.rst conf.py Makefile make.bat
