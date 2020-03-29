@@ -6,7 +6,7 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
-from imp import load_source
+
 from shutil import copy
 from shutil import copyfile
 from shutil import copystat
@@ -16,6 +16,7 @@ from tempfile import mkdtemp
 import boto3
 import botocore
 import yaml
+import sys
 
 from .helpers import archive
 from .helpers import get_environment_variable_value
@@ -32,6 +33,21 @@ ARN_PREFIXES = {
 }
 
 log = logging.getLogger(__name__)
+
+
+def load_source(module_name, module_path):
+    """Loads a python module from the path of the corresponding file."""
+
+    if sys.version_info[0] == 3 and sys.version_info[1] >= 5:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+    elif sys.version_info[0] == 3 and sys.version_info[1] < 5:
+        import importlib.machinery
+        loader = importlib.machinery.SourceFileLoader(module_name, module_path)
+        module = loader.load_module()
+    return module
 
 
 def cleanup_old_versions(
