@@ -1,46 +1,66 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+"""This module contains setup instructions for python-lambda."""
+import codecs
+import os
 import sys
+from shutil import rmtree
 
 from setuptools import find_packages
+from setuptools import Command
 from setuptools import setup
 
-with open("README.md") as readme_file:
-    readme = readme_file.read()
+THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+README = os.path.join(THIS_DIR, "README.md")
 
-requirements = [
-    "boto3",
-    "click",
-    "PyYAML",
-]
+with codecs.open(README, encoding="utf-8") as fh:
+    long_description = "\n" + fh.read()
 
-# Only install futures package if using a Python version <= 2.7
-if sys.version_info < (3, 0):
-    requirements.append("futures")
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
+class UploadCommand(Command):
+    """Support setup.py publish."""
+
+    description = "Build and publish the package."
+    user_options = []
+
+    @staticmethod
+    def status(s):
+        """Print in bold."""
+        print(f"\033[1m{s}\033[0m")
+
+    def initialize_options(self):
+        """Initialize options."""
+        pass
+
+    def finalize_options(self):
+        """Finialize options."""
+        pass
+
+    def run(self):
+        """Upload release to Pypi."""
+        try:
+            self.status("Removing previous builds ...")
+            rmtree(os.path.join(THIS_DIR, "dist"))
+        except Exception:
+            pass
+        self.status("Building Source distribution ...")
+        os.system(f"{sys.executable} setup.py sdist")
+        self.status("Uploading the package to PyPI via Twine ...")
+        os.system("twine upload dist/*")
+        sys.exit()
+
+package_data = {
+    "aws_lambda": ["project_templates/*"],
+    "": ["*.json"],
+}
 
 setup(
     name="python-lambda",
     version="9.0.0",
-    description="The bare minimum for a Python app running on Amazon Lambda.",
-    long_description=readme,
     author="Nick Ficano",
     author_email="nficano@gmail.com",
-    url="https://github.com/nficano/python-lambda",
     packages=find_packages(),
-    package_data={
-        "aws_lambda": ["project_templates/*"],
-        "": ["*.json"],
-    },  # noqa
-    include_package_data=True,
-    scripts=["scripts/lambda"],
-    install_requires=requirements,
+    url="https://github.com/nficano/python-lambda",
     license="ISCL",
-    zip_safe=False,
-    keywords="python-lambda",
+    package_data=package_data,
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
@@ -51,6 +71,11 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
     ],
-    test_suite="tests",
-    tests_require=test_requirements,
+    description="The bare minimum for a Python app running on Amazon Lambda.",
+    include_package_data=True,
+    long_description_content_type="text/markdown",
+    long_description=long_description,
+    zip_safe=True,
+    cmdclass={"upload": UploadCommand},
+    scripts=["scripts/lambda"],
 )
