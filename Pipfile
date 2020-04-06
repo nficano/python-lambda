@@ -26,8 +26,5 @@ pyaml = "==15.8.2"
 python-dateutil = "==2.5.3"
 PyYAML = "==5.1"
 
-[requires]
-python_version = "3.8"
-
 [pipenv]
 allow_prereleases = true
