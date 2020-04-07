@@ -32,10 +32,11 @@ parts.
 
 # Requirements
 
-* Python 2.7 & 3.6 (At the time of writing this, AWS Lambda only supports Python 2.7/3.6).
+* Python 2.7, >= 3.6 (At the time of writing this, these are the Python runtimes supported by AWS Lambda).
 * Pip (~8.1.1)
 * Virtualenv (~15.0.0)
 * Virtualenvwrapper (~4.7.1)
+
 
 # Getting Started
 
@@ -212,7 +213,7 @@ You can also choose to use S3 as your source for Lambda deployments.  This can
 be done by issuing ``lambda deploy-s3`` with the same variables/AWS permissions
 you'd set for executing the ``upload`` command.
 
-### Development
+## Development
 Development of "python-lambda" is facilitated exclusively on GitHub.
 Contributions in the form of patches, tests and feature creation and/or
 requests are very welcome and highly encouraged. Please open an issue if this
