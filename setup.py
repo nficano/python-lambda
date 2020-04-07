@@ -4,10 +4,15 @@ import os
 import sys
 from shutil import rmtree
 
-from setuptools import find_packages
 from setuptools import Command
+from setuptools import find_packages
 from setuptools import setup
 
+REQUIREMENTS = [
+    "boto3==1.4.4",
+    "click==6.6",
+    "PyYAML==5.1",
+]
 PACKAGE_DATA = {
     "aws_lambda": ["project_templates/*"],
     "": ["*.json"],
@@ -60,6 +65,7 @@ setup(
     packages=find_packages(),
     url="https://github.com/nficano/python-lambda",
     license="ISCL",
+    install_requires=REQUIREMENTS,
     package_data=PACKAGE_DATA,
     test_suite="tests",
     tests_require=[],
