@@ -19,7 +19,7 @@ pytest-cov = "*"
 [packages]
 boto3 = "==1.4.4"
 botocore = "==1.5.62"
-click = "==6.6"
+click = "==7.1.1"
 docutils = "*"
 jmespath = "==0.9.0"
 pyaml = "==15.8.2"
