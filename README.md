@@ -33,9 +33,9 @@ parts.
 # Requirements
 
 * Python 2.7, >= 3.6 (At the time of writing this, these are the Python runtimes supported by AWS Lambda).
-* Pip (~8.1.1)
-* Virtualenv (~15.0.0)
-* Virtualenvwrapper (~4.7.1)
+* Pip (\~8.1.1)
+* Virtualenv (\~15.0.0)
+* Virtualenvwrapper (\~4.7.1)
 
 
 # Getting Started
