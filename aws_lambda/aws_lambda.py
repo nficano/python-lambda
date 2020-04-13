@@ -412,7 +412,7 @@ def build(
 
 
 def get_callable_handler_function(src, handler):
-    """Tranlate a string of the form "module.function" into a callable
+    """Translate a string of the form "module.function" into a callable
     function.
 
     :param str src:
