@@ -9,7 +9,7 @@ from setuptools import find_packages
 from setuptools import setup
 
 REQUIREMENTS = [
-    "boto3==1.4.4",
+    "boto3>=1.4.4",
     "click==6.6",
     "PyYAML==5.1",
 ]
