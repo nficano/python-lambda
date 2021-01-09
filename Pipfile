@@ -20,7 +20,7 @@ boto3 = ">=1.4.4"
 click = "==7.1.2"
 docutils = "*"
 jmespath = "==0.10.0"
-pyaml = "==15.8.2"
+pyaml = "==20.4.0"
 python-dateutil = "==2.8.1"
 PyYAML = "==5.3.1"
 
