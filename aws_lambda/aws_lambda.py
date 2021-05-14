@@ -6,6 +6,7 @@ import subprocess
 import sys
 import time
 from collections import defaultdict
+import re
 
 from shutil import copy
 from shutil import copyfile
@@ -442,6 +443,20 @@ def get_handler_filename(handler):
     return "{0}.py".format(module_name)
 
 
+def _install_package(package, path):
+    subprocess.check_call(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            package,
+            "-t",
+            path,
+            "--ignore-installed",
+        ]
+    )
+
 def _install_packages(path, packages):
     """Install all packages listed to the target directory.
 
@@ -463,24 +478,29 @@ def _install_packages(path, packages):
         if package.startswith("-e "):
             package = package.replace("-e ", "")
 
+
         print("Installing {package}".format(package=package))
-        subprocess.check_call(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                package,
-                "-t",
-                path,
-                "--ignore-installed",
-            ]
-        )
+        try:
+            _install_package(package, path)
+        except subprocess.CalledProcessError as e:
+            try:
+                print("Failed install of {package} ".format(package=package))
+                # editable local package are can also be named as `-e git+git@...#egg=$(local_name)`
+                # this try attempts to find the egg name, and install it
+                captures = re.findall("egg=([\w+_-]+)", package)
+                if captures:
+                    alternative = captures[0]
+                    print("Trying to install with alternative name {alternative}".format(alternative=alternative))
+                    _install_package(alternative, path)
+
+            except subprocess.CalledProcessError as e:
+                pass
     print(
         "Install directory contents are now: {directory}".format(
             directory=os.listdir(path)
         )
     )
+
 
 
 def pip_install_to_target(path, requirements=None, local_package=None):
