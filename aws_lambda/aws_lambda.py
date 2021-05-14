@@ -444,6 +444,13 @@ def get_handler_filename(handler):
 
 
 def _install_package(package, path):
+    """ Runs python pip install $(package) -t $(path) --ignore-installed command
+
+    :param str package:
+        Name of the package or directory to the local src
+    :param str path:
+        Path to copy installed pip packages to.
+    """
     subprocess.check_call(
         [
             sys.executable,
@@ -456,6 +463,29 @@ def _install_package(package, path):
             "--ignore-installed",
         ]
     )
+
+def _install_local_package(package, path):
+    """ Install a local package and install it. Uses `pip show` to find the
+    local location
+    :param str package:
+        Name of the local package
+    :param str path:
+        Path to copy installed pip packages to.
+    """
+    print(f"Running pip show {package}")
+    proc = subprocess.run([sys.executable, "-m", "pip", "show", package], stdout=subprocess.PIPE)
+    if not proc.stdout:
+        return False
+
+    out = str(proc.stdout, "utf-8")
+    captures = re.search("Location: ([^ \n]+)", out)
+    if not captures:
+        return False
+
+    directory = captures.groups()[0]
+    _install_package(directory, path)
+    return True
+
 
 def _install_packages(path, packages):
     """Install all packages listed to the target directory.
@@ -484,17 +514,18 @@ def _install_packages(path, packages):
             _install_package(package, path)
         except subprocess.CalledProcessError as e:
             try:
-                print("Failed install of {package} ".format(package=package))
                 # editable local package are can also be named as `-e git+git@...#egg=$(local_name)`
                 # this try attempts to find the egg name, and install it
-                captures = re.findall("egg=([\w+_-]+)", package)
-                if captures:
-                    alternative = captures[0]
-                    print("Trying to install with alternative name {alternative}".format(alternative=alternative))
-                    _install_package(alternative, path)
+                captures = re.search("egg=([\w+_-]+)", package)
+                if not captures:
+                    raise Exception()
+                alternative = captures.groups()[0]
+                if not _install_local_package(alternative, path):
+                    raise Exception()
 
-            except subprocess.CalledProcessError as e:
-                pass
+            except Exception as e:
+                print(e)
+                print("Failed to install of {package} ".format(package=package))
     print(
         "Install directory contents are now: {directory}".format(
             directory=os.listdir(path)
