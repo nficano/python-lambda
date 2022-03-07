@@ -704,7 +704,7 @@ def update_function(
             Publish=True,
         )
 
-    # Wait for function to be upodated
+    # Wait for function to be updated
     waiter = client.get_waiter('function_updated')
     waiter.wait(FunctionName=cfg.get("function_name"))
 
