@@ -16,7 +16,6 @@ from tempfile import mkdtemp
 import boto3
 import botocore
 import yaml
-import sys
 
 from .helpers import archive
 from .helpers import get_environment_variable_value
@@ -703,6 +702,10 @@ def update_function(
             ZipFile=byte_stream,
             Publish=True,
         )
+    waiter = client.get_waiter('function_updated')
+    waiter.wait(
+        FunctionName=cfg.get("function_name"),
+    )
 
     kwargs = {
         "FunctionName": cfg.get("function_name"),
