@@ -704,6 +704,10 @@ def update_function(
             Publish=True,
         )
 
+    # Wait for function to be updated
+    waiter = client.get_waiter('function_updated')
+    waiter.wait(FunctionName=cfg.get("function_name"))
+
     kwargs = {
         "FunctionName": cfg.get("function_name"),
         "Role": role,
