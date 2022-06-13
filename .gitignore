@@ -64,7 +64,9 @@ target/
 .idea/
 
 # vim swap files
-.*.sw?
-aws_lambda/.DS_Store
-.DS_Store
-.vscode/
+*.swp
+*.swo
+*.swn
+
+# config.yaml
+*.yaml
