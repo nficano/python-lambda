@@ -174,13 +174,20 @@ def upload(requirements, local_package, config_file, profile):
     multiple=True,
     help="Install local package as well.",
 )
-def deploy_s3(requirements, local_package, config_file, profile):
+@click.option(
+    '--preserve-vpc',
+    default=False,
+    is_flag=True,
+    help='Preserve VPC configuration on existing functions',
+)
+def deploy_s3(requirements, local_package, config_file, profile, preserve_vpc):
     aws_lambda.deploy_s3(
         CURRENT_DIR,
         requirements=requirements,
         local_package=local_package,
         config_file=config_file,
         profile_name=profile,
+        preserve_vpc=preserve_vpc,
     )
 
 
